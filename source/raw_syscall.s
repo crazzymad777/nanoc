@@ -12,6 +12,7 @@ raw_syscall:
     mov R8, R9
     mov R9, [RSP+8]
     syscall
+    mov rdx, rax
     cmp rax, -4095 # check error
     jne _exit
     mov rax, rcx

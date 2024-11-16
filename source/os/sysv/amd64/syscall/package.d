@@ -1,6 +1,11 @@
 module nanoc.os.sysv.amd64.syscall;
 
-extern (System) long raw_syscall(long fn, ...);
+struct raw_result {
+        long result;
+        long raw; // -4095 means error
+};
+
+extern (System) raw_result raw_syscall(long fn, ...);
 
 long syscall(T...)(T args)
 {
@@ -9,9 +14,11 @@ long syscall(T...)(T args)
     {
         static assert(false, "syscall: provided no arguments. At least syscall number required.");
     }
-    long return_code = raw_syscall(args);
-    if (return_code) {
-        errno = cast(int) return_code;
+
+    raw_result return_code = raw_syscall(args);
+    if (return_code.raw == -4095)
+    {
+        errno = cast(int) return_code.result;
     }
-    return return_code;
+    return return_code.result;
 }
