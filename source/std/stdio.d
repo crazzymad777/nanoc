@@ -5,7 +5,7 @@ enum EOF = -1;
 extern(C) int puts(const char *str)
 {
     import nanoc.os.sysv.amd64.syscall;
-    if (syscall(1, 1, str, strlen(str)) == 0)
+    if (syscall(1, 1, str, strlen(str)) >= 0)
     {
         return 0;
     }
@@ -20,4 +20,10 @@ extern(C) size_t strlen(const char *str)
         i++;
     }
     return i;
+}
+
+extern(C) size_t write(int fd, const void[] buf, size_t count)
+{
+    import nanoc.os.sysv.amd64.syscall;
+    return syscall(1, fd, cast(void*) buf, count);
 }
