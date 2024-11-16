@@ -19,3 +19,8 @@ raw_syscall:
     _exit:
     leave
     ret
+
+.globl never_be_reached
+.type never_be_reached, @function
+never_be_reached:
+    nop
