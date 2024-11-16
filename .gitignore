@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/nanoc
+nanoc.so
+nanoc.dylib
+nanoc.dll
+nanoc.a
+nanoc.lib
+nanoc-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst
