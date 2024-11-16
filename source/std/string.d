@@ -9,3 +9,9 @@ extern(C) size_t strlen(const char *str)
     }
     return i;
 }
+
+unittest {
+    assert(strlen("hello") == 5);
+    assert(strlen("привет") == 6*2);
+    assert(strlen("") == 0);
+}
