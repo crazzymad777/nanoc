@@ -43,22 +43,9 @@ MemoryBlock* _init_super_heap(size_t size)
         return null;
     }
 
-    int retries = 10;
-
     import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
     import nanoc.std.errno: errno;
-    MemoryBlock* block = null;
-
-    do
-    {
-        block = cast(MemoryBlock*) mmap(null, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        retries--;
-    }
-    while (block == null && errno == -11 && retries > 0);
-
-    import nanoc.std.string: memset;
-    memset(block, 0, size);
-
+    MemoryBlock* block = cast(MemoryBlock*) mmap(null, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (block)
     {
         block.flags = MemoryBlock.CLAIMED | MemoryBlock.PRIMARY | MemoryBlock.NANOC_MEMORY;
@@ -93,6 +80,8 @@ void _init_nanoc_super_heap(MemoryBlock* superblock, size_t size)
 
 MemoryBlock* dedicate_memory_block(MemoryBlock* superblock, size_t size)
 {
+    if (superblock is null) return null;
+
     import nanoc.std.errno: errno, EINVAL;
     if (superblock.flags & MemoryBlock.NANOC_MEMORY)
     {
@@ -109,19 +98,13 @@ MemoryBlock* dedicate_memory_block(MemoryBlock* superblock, size_t size)
     }
     errno = EINVAL;
     return null;
-    //return _init_super_heap(size+MemoryBlock.sizeof*4);
 }
 
 void* _malloc(size_t size)
 {
     if (superHeap is null)
     {
-        superHeap = _init_super_heap(4096);//size+MemoryBlock.sizeof*4);
-    }
-
-    if (superHeap is null)
-    {
-        return null;
+        superHeap = _init_super_heap(4096); // size + MemoryBlock.sizeof*4);
     }
 
     alias CLAIMED = MemoryBlock.CLAIMED;
@@ -129,13 +112,6 @@ void* _malloc(size_t size)
     alias TAIL = MemoryBlock.TAIL;
 
     MemoryBlock* superblock = superHeap;
-
-    // = _init_super_heap(2048);
-    if (superblock is null)
-    {
-        superblock = _init_super_heap(size+MemoryBlock.sizeof*5);
-    }
-
     MemoryBlock* block = dedicate_memory_block(superblock, size);
 
     if (block is null)
