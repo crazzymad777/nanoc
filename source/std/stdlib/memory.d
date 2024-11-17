@@ -45,6 +45,7 @@ struct MemoryBlock
 
 __gshared SuperMemoryBlock* superHeap;
 
+extern(C)
 @("mmap_wrapper")
 MemoryBlock* _allocate_primary_memory_block(size_t size)
 {
@@ -112,11 +113,11 @@ MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
     import nanoc.std.errno: errno, EINVAL;
     if (superblock.entry.flags & MemoryBlock.NANOC_MEMORY)
     {
-        auto new_block_size = size + MemoryBlock.sizeof;
+        size_t new_block_size = size + MemoryBlock.sizeof;
         if (new_block_size < superblock.head.size)
         {
             superblock.head.size -= new_block_size;
-            MemoryBlock* subblock = &superblock.head + superblock.head.size/MemoryBlock.sizeof;
+            MemoryBlock* subblock = cast(MemoryBlock*) (&superblock.head.data + superblock.head.size);
             subblock.size = new_block_size;
             subblock.flags = 0;
             return subblock;
@@ -141,7 +142,7 @@ void* _malloc(size_t size)
     auto superblock = superHeap;
     MemoryBlock* block = dedicate_memory_block(superblock, size);
 
-    if (!block)
+    if (block is null)
     {
         block = _allocate_primary_memory_block(size + MemoryBlock.sizeof);
     }
