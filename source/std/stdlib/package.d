@@ -2,9 +2,9 @@ module nanoc.std.stdlib;
 
 /* Page per allocation... */
 /* Relese page when freed */
-version = NANOC_NAIVE_MEMORY_ALLOCATION;
-
-//version = LIBC_MEMORY_ALLOCATION; // use OS libc
+// version = NANOC_NAIVE_MEMORY_ALLOCATION;
+version = NANOC_MEMORY_ALLOCATION;
+// version = LIBC_MEMORY_ALLOCATION; // use OS libc
 
 extern (C)
 {
@@ -27,6 +27,10 @@ extern (C)
         return ptr;
     }
 
+    version (NANOC_MEMORY_ALLOCATION)
+    {
+        public import nanoc.std.stdlib.memory;
+    }
     version (NANOC_NAIVE_MEMORY_ALLOCATION)
     {
         public import nanoc.std.stdlib.naive;
