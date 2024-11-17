@@ -2,6 +2,14 @@ module nanoc.std.stdlib.memory;
 
 public import nanoc.std.stdlib.naive: _realloc;
 
+struct SuperMemoryBlock
+{
+    MemoryBlock entry;
+    MemoryBlock next_field;
+    MemoryBlock head;
+    byte[0] data;
+}
+
 struct MemoryBlock
 {
     enum MemoryBlockFlagsOffset
@@ -33,10 +41,10 @@ struct MemoryBlock
 	byte[0] data;
 }
 
-__gshared MemoryBlock* superHeap;
+__gshared SuperMemoryBlock* superHeap;
 
 extern(C)
-MemoryBlock* _init_super_heap(size_t size)
+SuperMemoryBlock* _init_super_heap(size_t size)
 {
     if (size < MemoryBlock.sizeof * 4)
     {
@@ -45,11 +53,11 @@ MemoryBlock* _init_super_heap(size_t size)
 
     import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
     import nanoc.std.errno: errno;
-    MemoryBlock* block = cast(MemoryBlock*) mmap(null, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    SuperMemoryBlock* block = cast(SuperMemoryBlock*) mmap(null, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (block)
     {
-        block.flags = MemoryBlock.CLAIMED | MemoryBlock.PRIMARY | MemoryBlock.NANOC_MEMORY;
-        block.size = size;
+        block.entry.flags = MemoryBlock.CLAIMED | MemoryBlock.PRIMARY | MemoryBlock.NANOC_MEMORY;
+        block.entry.size = size;
         _init_nanoc_super_heap(block, size);
         return block;
     }
@@ -57,42 +65,38 @@ MemoryBlock* _init_super_heap(size_t size)
 }
 
 extern (C)
-void _init_nanoc_super_heap(MemoryBlock* superblock, size_t size)
+void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
 {
     alias HEAD_BLOCK_POINTER = MemoryBlock.HEAD_BLOCK_POINTER;
     alias NEXT_HEAP_POINTER = MemoryBlock.NEXT_HEAP_POINTER;
     alias NANOC_MEMORY = MemoryBlock.NANOC_MEMORY;
     alias HEAD = MemoryBlock.HEAD;
 
-    //block.flags |= NANOC_MEMORY;
-    MemoryBlock* nextHeap = superblock + 1;
-    nextHeap.flags = NEXT_HEAP_POINTER;
-    nextHeap.next_super_heap = null;
+    superblock.next_field.flags = NEXT_HEAP_POINTER;
+    superblock.next_field.next_super_heap = null;
 
-    MemoryBlock* head = nextHeap + 1;
-    head.flags = NANOC_MEMORY | HEAD;
-    head.size = size - MemoryBlock.sizeof * 3;
+    superblock.head.flags = NANOC_MEMORY | HEAD;
+    superblock.head.size = size - MemoryBlock.sizeof * 3;
 
-    MemoryBlock* tail = cast(MemoryBlock*) (&superblock.data + size - MemoryBlock.sizeof*2);
+    MemoryBlock* tail = cast(MemoryBlock*) (&superblock.entry.data + size - MemoryBlock.sizeof*2);
     tail.flags = NANOC_MEMORY | MemoryBlock.TAIL;
-    tail.head = head;
+    tail.head = &superblock.head;
 }
 
-MemoryBlock* dedicate_memory_block(MemoryBlock* superblock, size_t size)
+MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
 {
     if (superblock is null) return null;
 
     import nanoc.std.errno: errno, EINVAL;
-    if (superblock.flags & MemoryBlock.NANOC_MEMORY)
+    if (superblock.entry.flags & MemoryBlock.NANOC_MEMORY)
     {
-        MemoryBlock* head = superblock + 2;
         auto new_block_size = size + MemoryBlock.sizeof;
-        if (new_block_size < head.size)
+        if (new_block_size < superblock.head.size)
         {
-            head.size -= new_block_size;
-            MemoryBlock* sublock = head + head.size/MemoryBlock.sizeof;
-            sublock.size = new_block_size;
-            return sublock;
+            superblock.head.size -= new_block_size;
+            MemoryBlock* subblock = &superblock.head + superblock.head.size/MemoryBlock.sizeof;
+            subblock.size = new_block_size;
+            return subblock;
         }
         return null;
     }
@@ -111,22 +115,22 @@ void* _malloc(size_t size)
     alias HEAD = MemoryBlock.HEAD;
     alias TAIL = MemoryBlock.TAIL;
 
-    MemoryBlock* superblock = superHeap;
+    auto superblock = superHeap;
     MemoryBlock* block = dedicate_memory_block(superblock, size);
 
-    if (block is null)
-    {
-        block = _init_super_heap(size+MemoryBlock.sizeof*4);
-        if (block)
-        {
-            MemoryBlock* nextHeap = cast(MemoryBlock*) &block.data;
-            MemoryBlock* head = nextHeap + 1;
-            head.flags = CLAIMED | HEAD;
-            MemoryBlock* tail = block+ size - 1;
-            tail.flags = CLAIMED | TAIL;
-            return cast(void*) (block + 3);
-        }
-    }
+    // if (block is null)
+    // {
+    //     block = _init_super_heap(size+MemoryBlock.sizeof*4);
+    //     if (block)
+    //     {
+    //         MemoryBlock* nextHeap = cast(MemoryBlock*) &block.data;
+    //         MemoryBlock* head = nextHeap + 1;
+    //         head.flags = CLAIMED | HEAD;
+    //         MemoryBlock* tail = block+ size - 1;
+    //         tail.flags = CLAIMED | TAIL;
+    //         return cast(void*) (block + 3);
+    //     }
+    // }
 
     if (block)
     {
