@@ -3,6 +3,9 @@ module nanoc.std.stdio;
 alias mode_t = int;
 enum EOF = -1;
 
+enum O_WRONLY = 1;
+enum O_CREAT = 64;
+
 extern(C) int puts(const char *str)
 {
     import nanoc.os: syscall, SYS_write;
