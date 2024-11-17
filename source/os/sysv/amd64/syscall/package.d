@@ -7,7 +7,7 @@ struct syscall_response {
 
 extern (System) syscall_response raw_syscall(long fn, ...);
 
-long syscall(T...)(T args)
+extern (System) long syscall(T...)(T args)
 {
     import nanoc.std.errno: errno;
     static if (args.length == 0)
@@ -16,7 +16,7 @@ long syscall(T...)(T args)
     }
 
     auto return_code = raw_syscall(args);
-    if (return_code.raw == -4095)
+    if (return_code.raw >= -4095 && return_code.raw < 0)
     {
         errno = cast(int) return_code.result;
     }
