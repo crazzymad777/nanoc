@@ -76,14 +76,40 @@ extern (C) int fprintf(T...)(FILE* stream, const char* format, T args)
         {
             static if (args.length > 0)
             {
+                int ret = -1;
                 if (x == 'u')
                 {
-                    fprint_unsigned_int(stream, args[0]);
+                    static if (is(typeof(args[0]) == uint))
+                    {
+                        ret = fprint_unsigned_int(stream, args[0]);
+                    }
                 }
                 else if (x == 'd')
                 {
-                    fprint_signed_int(stream, args[0]);
+                    static if (is(typeof(args[0]) == int))
+                    {
+                        ret = fprint_signed_int(stream, args[0]);
+                    }
                 }
+                else if (x == 's')
+                {
+                    //pragma(msg, typeof(args[0]));
+                    static if (is(typeof(args[0]) == immutable(char)*))
+                    {
+                        ret = fputs(args[0], stream);
+                    }
+                    else
+                    {
+                        ret = 0;
+                    }
+                    //ret = 0;
+                }
+
+                if (ret < 0)
+                {
+                    return EOF;
+                }
+                nbytes += ret;
                 i++;
                 break;
             }
