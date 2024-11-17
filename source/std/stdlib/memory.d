@@ -2,6 +2,7 @@ module nanoc.std.stdlib.memory;
 
 public import nanoc.std.stdlib.naive: _realloc;
 
+// Super memory block must have next_field, head & tail
 struct SuperMemoryBlock
 {
     MemoryBlock entry;
@@ -10,6 +11,7 @@ struct SuperMemoryBlock
     byte[0] data;
 }
 
+// Memory block must have size and flags
 struct MemoryBlock
 {
     enum MemoryBlockFlagsOffset
@@ -43,16 +45,36 @@ struct MemoryBlock
 
 __gshared SuperMemoryBlock* superHeap;
 
+@("mmap_wrapper")
+MemoryBlock* _allocate_primary_memory_block(size_t size)
+{
+    import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
+    // raw memory block
+    if (size < MemoryBlock.sizeof)
+    {
+        return null;
+    }
+
+    MemoryBlock* raw_block = cast(MemoryBlock*) mmap(null, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (raw_block)
+    {
+        raw_block.flags = MemoryBlock.CLAIMED | MemoryBlock.PRIMARY;
+        raw_block.size = size;
+        return raw_block;
+    }
+    return null;
+}
+
 extern(C)
+@("mmap_wrapper")
 SuperMemoryBlock* _init_super_heap(size_t size)
 {
+    import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
     if (size < MemoryBlock.sizeof * 4)
     {
         return null;
     }
 
-    import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
-    import nanoc.std.errno: errno;
     SuperMemoryBlock* block = cast(SuperMemoryBlock*) mmap(null, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (block)
     {
@@ -96,6 +118,7 @@ MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
             superblock.head.size -= new_block_size;
             MemoryBlock* subblock = &superblock.head + superblock.head.size/MemoryBlock.sizeof;
             subblock.size = new_block_size;
+            subblock.flags = 0;
             return subblock;
         }
         return null;
@@ -118,23 +141,14 @@ void* _malloc(size_t size)
     auto superblock = superHeap;
     MemoryBlock* block = dedicate_memory_block(superblock, size);
 
-    // if (block is null)
-    // {
-    //     block = _init_super_heap(size+MemoryBlock.sizeof*4);
-    //     if (block)
-    //     {
-    //         MemoryBlock* nextHeap = cast(MemoryBlock*) &block.data;
-    //         MemoryBlock* head = nextHeap + 1;
-    //         head.flags = CLAIMED | HEAD;
-    //         MemoryBlock* tail = block+ size - 1;
-    //         tail.flags = CLAIMED | TAIL;
-    //         return cast(void*) (block + 3);
-    //     }
-    // }
+    if (!block)
+    {
+        block = _allocate_primary_memory_block(size + MemoryBlock.sizeof);
+    }
 
     if (block)
     {
-        block.flags = CLAIMED;
+        block.flags |= CLAIMED;
         return cast(void*) (block + 1);
     }
     return null;
@@ -152,18 +166,17 @@ void _free(void *ptr)
 {
     alias PRIMARY = MemoryBlock.PRIMARY;
     import nanoc.sys.mman: munmap;
-    auto superblock = cast(MemoryBlock*) (ptr - 3);
-    size_t size = superblock.size;
+    auto freed_block = cast(MemoryBlock*) (ptr - 1);
 
-    if (superblock.flags & PRIMARY)
+    if (freed_block.flags & PRIMARY)
     {
-        // called free on head subblock of primary MemoryBlock
-        munmap(cast(void*) superblock, size);
+        // called free on PRIMARY memory block
+        size_t size = freed_block.size;
+        munmap(cast(void*) freed_block, size);
     }
     else
     {
-        auto parent = cast(MemoryBlock*) (ptr - 1);
-        unclaim_memory_block(parent);
+        unclaim_memory_block(freed_block);
         // if between freed block and tail block there is no claimed block then we need to check blocks between head & free block
         // find tail block, unclaim it
         // If super block don't have claimed blocks then free superblock
