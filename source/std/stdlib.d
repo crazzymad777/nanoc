@@ -10,7 +10,7 @@ extern (C)
         never_be_reached(); // supress D warning
     }
 
-    void* calloc(size_t nmemb, size_t size)
+    void* _calloc(size_t nmemb, size_t size)
     {
         import nanoc.std.string: memset;
         void* ptr = _malloc(nmemb*size);
@@ -35,7 +35,7 @@ extern (C)
     }
 
     // naive free
-    void free(void *ptr)
+    void _free(void *ptr)
     {
         import nanoc.sys.mman: munmap;
         long* memory = cast(long*) (ptr-8);
@@ -51,7 +51,7 @@ extern (C)
         if (q)
         {
             memcpy(q, ptr, size);
-            free(ptr);
+            _free(ptr);
         }
         return q;
     }
