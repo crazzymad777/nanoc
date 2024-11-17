@@ -1,10 +1,13 @@
-module nanoc.std.stdio;
+module nanoc.std.stdio.common;
 
 alias mode_t = int;
 enum EOF = -1;
-
+enum O_RDONLY = 0;
 enum O_WRONLY = 1;
+enum O_RDWR = 2;
 enum O_CREAT = 64;
+enum O_TRUNC = 512;
+enum O_APPEND = 1024;
 
 extern(C) int puts(const char *str)
 {
@@ -13,6 +16,29 @@ extern(C) int puts(const char *str)
     if (syscall(SYS_write, 1, str, strlen(str)) >= 0)
     {
         return 0;
+    }
+    return EOF;
+}
+
+extern(C) int putchar(int octet)
+{
+    import nanoc.os: syscall, SYS_write;
+    char x = cast(char) octet;
+    if (syscall(SYS_write, 1, &x, 1) >= 0)
+    {
+        return cast(int) x;
+    }
+    return EOF;
+}
+
+extern(C) int getchar()
+{
+    import nanoc.os: syscall, SYS_read;
+    char x;
+    int ret = cast(int) syscall(SYS_read, 0, &x, 1);
+    if (ret >= 0)
+    {
+        return x;
     }
     return EOF;
 }
