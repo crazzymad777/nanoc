@@ -1,5 +1,11 @@
 module nanoc.std.stdlib;
 
+/* Page per allocation... */
+/* Relese page when freed */
+version = NANOC_NAIVE_MEMORY_ALLOCATION;
+
+//version = LIBC_MEMORY_ALLOCATION; // use OS libc
+
 extern (C)
 {
     noreturn exit(int status)
@@ -21,6 +27,8 @@ extern (C)
         return ptr;
     }
 
+    version (NANOC_NAIVE_MEMORY_ALLOCATION)
+    {
     // naive malloc
     void* _malloc(size_t size)
     {
@@ -54,5 +62,13 @@ extern (C)
             _free(ptr);
         }
         return q;
+    }
+    }
+    else version(LIBC_MEMORY_ALLOCATION)
+    {
+        import core.stdc.stdlib;
+        alias _malloc = malloc;
+        alias _free = free;
+        alias _realloc = realloc;
     }
 }
