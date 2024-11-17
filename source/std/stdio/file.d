@@ -51,6 +51,16 @@ extern (C) int fclose(FILE* f)
         _free(f);
         return 0;
     }
+    else if (f.type == FILE.Type.OS)
+    {
+        int r = close(f.raw_fd);
+        if (r < 0)
+        {
+            return EOF;
+        }
+        _free(f);
+        return 0;
+    }
     return EOF;
 }
 
@@ -67,6 +77,16 @@ extern (C) int fputc(int c, FILE* stream)
             buf[offset] = x;
             memory.offset++;
             return x;
+        }
+        return EOF;
+    }
+    else if (stream.type == FILE.Type.OS)
+    {
+        import nanoc.os: syscall, SYS_write;
+        char x = cast(char) c;
+        if (syscall(SYS_write, stream.raw_fd, &x, 1) >= 0)
+        {
+            return cast(int) x;
         }
         return EOF;
     }
@@ -93,82 +113,82 @@ extern (C) int fgetc(FILE *stream)
     return EOF;
 }
 
-// extern (C) FILE* fopen(const char* filename, const char* mode)
-// {
-//     import nanoc.std.stdlib: _malloc, _free;
-//     FILE* f = cast(FILE*) _malloc(FILE.sizeof);
-//     if (f)
-//     {
-//         f.type = FILE.Type.OS;
-//         int imode = 0;
-//         // rwa+cemx
-//         bool read = false;
-//         bool write = false;
-//         bool extend = false; // +
-//         bool append = false;
-//         for (int i = 0; i < 8 && mode[i] != 0; i++)
-//         {
-//             if (mode[i] == 'r')
-//             {
-//                 read = true;
-//             }
-//             if (mode[i] == 'w')
-//             {
-//                 write = true;
-//             }
-//             if (mode[i] == 'a')
-//             {
-//                 append = true;
-//             }
-//             if (mode[i] == '+')
-//             {
-//                 extend = true;
-//             }
-//         }
-//
-//         if (write && append)
-//         {
-//             import nanoc.std.errno: errno;
-//             errno = -22; // EINVAL
-//             _free(f);
-//             return null;
-//         }
-//
-//         if ((write || append) && read)
-//         {
-//             imode |= O_RDWR;
-//         }
-//         else if (write || append)
-//         {
-//             imode |= O_WRONLY;
-//         }
-//
-//         if (extend)
-//         {
-//             imode = O_RDWR;
-//         }
-//
-//         if (imode == O_WRONLY || imode == O_RDWR)
-//         {
-//             if (append)
-//             {
-//                 imode |= O_CREAT | O_APPEND;
-//             }
-//             else
-//             {
-//                 imode |= O_CREAT | O_TRUNC;
-//             }
-//         }
-//
-//         f.raw_fd = open(filename, imode, 0);
-//         if (f.raw_fd)
-//         {
-//             return f;
-//         }
-//         _free(f);
-//     }
-//     return null;
-// }
+extern (C) FILE* fopen(const char* filename, const char* mode)
+{
+    import nanoc.std.stdlib: _malloc, _free;
+    FILE* f = cast(FILE*) _malloc(FILE.sizeof);
+    if (f)
+    {
+        f.type = FILE.Type.OS;
+        int imode = 0;
+        // rwa+cemx
+        bool read = false;
+        bool write = false;
+        bool extend = false; // +
+        bool append = false;
+        for (int i = 0; i < 8 && mode[i] != 0; i++)
+        {
+            if (mode[i] == 'r')
+            {
+                read = true;
+            }
+            if (mode[i] == 'w')
+            {
+                write = true;
+            }
+            if (mode[i] == 'a')
+            {
+                append = true;
+            }
+            if (mode[i] == '+')
+            {
+                extend = true;
+            }
+        }
+
+        if (write && append)
+        {
+            import nanoc.std.errno: errno;
+            errno = -22; // EINVAL
+            _free(f);
+            return null;
+        }
+
+        if ((write || append) && read)
+        {
+            imode |= O_RDWR;
+        }
+        else if (write || append)
+        {
+            imode |= O_WRONLY;
+        }
+
+        if (extend)
+        {
+            imode = O_RDWR;
+        }
+
+        if (imode == O_WRONLY || imode == O_RDWR)
+        {
+            if (append)
+            {
+                imode |= O_CREAT | O_APPEND;
+            }
+            else
+            {
+                imode |= O_CREAT | O_TRUNC;
+            }
+        }
+
+        f.raw_fd = open(filename, imode, 0);
+        if (f.raw_fd)
+        {
+            return f;
+        }
+        _free(f);
+    }
+    return null;
+}
 //
 //
 // extern (C) int fclose(FILE* f)
