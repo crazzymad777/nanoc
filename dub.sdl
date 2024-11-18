@@ -1,5 +1,5 @@
 name "nanoc"
-targetType "dynamicLibrary"
+targetType "library"
 description "Nano library C"
 authors "Yuriy Moskoff"
 copyright "Copyright © 2024, Yuriy Moskoff"
@@ -8,3 +8,4 @@ dflags "-betterC" "-fPIC" platform="dmd" platform="gdc"
 dflags "-betterC" platform="ldc"
 preBuildCommands "as source/raw_syscall.s -o obj/raw_syscall.o -c"
 sourceFiles "obj/raw_syscall.o"
+
