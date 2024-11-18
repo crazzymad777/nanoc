@@ -7,7 +7,7 @@ public import nanoc.std.stdlib.naive: _realloc;
 struct SuperMemoryBlock
 {
     MemoryBlock entry;
-    MemoryBlock next;
+    MemoryBlock field;
     MemoryBlock head;
     byte[0] data;
 }
@@ -39,8 +39,8 @@ struct MemoryBlock
 
     union {
 		size_t size;
-		void* head; // for tail, correspodent head
-		void* next_super_heap; // for NextSuperHeap
+		MemoryBlock* head; // for tail, correspodent head
+		SuperMemoryBlock* next_super_heap; // for NextSuperHeap
 	}
 	long flags;
 	byte[0] data;
@@ -98,8 +98,8 @@ void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
     alias NANOC_MEMORY = MemoryBlock.NANOC_MEMORY;
     alias HEAD = MemoryBlock.HEAD;
 
-    superblock.next.flags = NEXT_HEAP_POINTER;
-    superblock.next.next_super_heap = null;
+    superblock.field.flags = NEXT_HEAP_POINTER;
+    superblock.field.next_super_heap = null;
 
     superblock.head.flags = NANOC_MEMORY | HEAD;
     superblock.head.size = size - MemoryBlock.sizeof * 3;
@@ -112,6 +112,10 @@ void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
 MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
 {
     if (superblock is null) return null;
+    if (size > 4096-MemoryBlock.sizeof*4)
+    {
+        return null;
+    }
 
     import nanoc.std.errno: errno, EINVAL;
     if (superblock.entry.flags & MemoryBlock.NANOC_MEMORY)
@@ -126,13 +130,26 @@ MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
             return subblock;
         }
 
-        if (new_block_size - MemoryBlock.sizeof <= superblock.head.size)
+        if (!(superblock.head.flags & MemoryBlock.CLAIMED))
         {
-            // use head block
-            superblock.head.flags |= MemoryBlock.CLAIMED;
-            return &superblock.head;
+            if (new_block_size - MemoryBlock.sizeof <= superblock.head.size)
+            {
+                // use head block
+                superblock.head.flags |= MemoryBlock.CLAIMED;
+                return &superblock.head;
+            }
         }
-        return null;
+
+        if (superblock.field.next_super_heap is null)
+        {
+            superblock.field.next_super_heap = _init_super_block(4096);
+            if (superblock.field.next_super_heap is null)
+            {
+                return null;
+            }
+        }
+
+        return dedicate_memory_block(superblock.field.next_super_heap, size);
     }
     errno = EINVAL;
     return null;
@@ -165,12 +182,21 @@ void* _malloc(size_t size)
     return null;
 }
 
-void unclaim_memory_block(MemoryBlock* block)
+void unclaim_memory_block(MemoryBlock* single_block)
 {
     alias CLAIMED = MemoryBlock.MemoryBlockFlagsOffset.CLAIMED;
+    long flags = single_block.flags;
+    single_block.flags = flags & ~(1uL << CLAIMED);
+}
+
+size_t unclaim_memory_block(MemoryBlock* entry_block, MemoryBlock* block)
+{
+    alias CLAIMED = MemoryBlock.MemoryBlockFlagsOffset.CLAIMED;
+    MemoryBlock* next = cast(MemoryBlock*) (&block.data + block.size);
 
     long flags = block.flags;
     block.flags = flags & ~(1uL << CLAIMED);
+    return block.size;
 }
 
 void _free(void *ptr)
@@ -198,7 +224,7 @@ void _free(void *ptr)
     }
     else
     {
-        unclaim_memory_block(freed_block);
+        unclaim_memory_block(freed_block, freed_block);
         // if between freed block and tail block there is no claimed block then we need to check blocks between head & free block
         // find tail block, unclaim it
         // If super block don't have claimed blocks then free superblock
