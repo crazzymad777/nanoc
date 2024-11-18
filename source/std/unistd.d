@@ -23,33 +23,14 @@ unittest {
 
     for (int i = 0; i < number; i++)
     {
-        int r = waitid(P_ALL, 0, null, WEXITED);
-        if (r < 0)
+        if (waitid(P_ALL, 0, null, WEXITED) < 0)
         {
-            if (r == -11)
-            {
-                // do it i do it again
-                i--;
-                continue;
-            }
-            // if (r == -14)
-            // {
-            //     // null pointer exception from linux kernel?
-            //     // EFAULT 14 Неправильный адрес
-            //     // beacuse waitid syscall have fifth argument
-            //     continue;
-            // }
             assert(false, "waitid failed");
         }
     }
 
-    int r;
-
-    do {
-        r = waitid(P_ALL, 0, null, WEXITED);
-        if (r == 0)
-        {
-            assert(false, "waitid failed");
-        }
-    } while(r == -11);
+    if (waitid(P_ALL, 0, null, WEXITED) == 0)
+    {
+        assert(false, "waitid failed");
+    }
 }
