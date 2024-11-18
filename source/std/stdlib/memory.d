@@ -7,7 +7,7 @@ public import nanoc.std.stdlib.naive: _realloc;
 struct SuperMemoryBlock
 {
     MemoryBlock entry;
-    MemoryBlock field;
+    MemoryBlock next;
     MemoryBlock head;
     byte[0] data;
 }
@@ -79,7 +79,8 @@ SuperMemoryBlock* _init_super_block(size_t size)
         return null;
     }
 
-    SuperMemoryBlock* block = cast(SuperMemoryBlock*) mmap(null, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    import core.stdc.stdlib;
+    SuperMemoryBlock* block = cast(SuperMemoryBlock*) _allocate_primary_memory_block(size);
     if (block)
     {
         block.entry.flags = MemoryBlock.CLAIMED | MemoryBlock.PRIMARY | MemoryBlock.NANOC_MEMORY | MemoryBlock.SUPERBLOCK;
@@ -97,13 +98,14 @@ void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
     alias NANOC_MEMORY = MemoryBlock.NANOC_MEMORY;
     alias HEAD = MemoryBlock.HEAD;
 
-    superblock.field.flags = NEXT_HEAP_POINTER;
-    superblock.field.next_super_heap = null;
+    MemoryBlock* next = cast(MemoryBlock*) (&superblock.entry.data);
+    next.flags = NEXT_HEAP_POINTER;
+    next.next_super_heap = null;
 
     superblock.head.flags = NANOC_MEMORY | HEAD;
     superblock.head.size = size - MemoryBlock.sizeof * 3;
 
-    MemoryBlock* tail = cast(MemoryBlock*) (&superblock.entry.data + size - MemoryBlock.sizeof*2);
+    MemoryBlock* tail = cast(MemoryBlock*) (&superblock.data + size - MemoryBlock.sizeof*4);
     tail.flags = NANOC_MEMORY | MemoryBlock.TAIL;
     tail.head = &superblock.head;
 }
