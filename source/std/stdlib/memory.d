@@ -98,9 +98,8 @@ void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
     alias NANOC_MEMORY = MemoryBlock.NANOC_MEMORY;
     alias HEAD = MemoryBlock.HEAD;
 
-    MemoryBlock* next = cast(MemoryBlock*) (&superblock.entry.data);
-    next.flags = NEXT_HEAP_POINTER;
-    next.next_super_heap = null;
+    superblock.next.flags = NEXT_HEAP_POINTER;
+    superblock.next.next_super_heap = null;
 
     superblock.head.flags = NANOC_MEMORY | HEAD;
     superblock.head.size = size - MemoryBlock.sizeof * 3;
