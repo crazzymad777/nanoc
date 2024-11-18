@@ -2,12 +2,12 @@ module nanoc.std.stdlib.memory;
 
 public import nanoc.std.stdlib.naive: _realloc;
 
-// Super memory block must have next_field, head & tail
+// Super memory block must have field, head & tail
 // Super memory block contains other memory blocks
 struct SuperMemoryBlock
 {
     MemoryBlock entry;
-    MemoryBlock next_field;
+    MemoryBlock field;
     MemoryBlock head;
     byte[0] data;
 }
@@ -90,7 +90,6 @@ SuperMemoryBlock* _init_super_block(size_t size)
     return null;
 }
 
-extern (C)
 void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
 {
     alias HEAD_BLOCK_POINTER = MemoryBlock.HEAD_BLOCK_POINTER;
@@ -98,8 +97,8 @@ void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
     alias NANOC_MEMORY = MemoryBlock.NANOC_MEMORY;
     alias HEAD = MemoryBlock.HEAD;
 
-    superblock.next_field.flags = NEXT_HEAP_POINTER;
-    superblock.next_field.next_super_heap = null;
+    superblock.field.flags = NEXT_HEAP_POINTER;
+    superblock.field.next_super_heap = null;
 
     superblock.head.flags = NANOC_MEMORY | HEAD;
     superblock.head.size = size - MemoryBlock.sizeof * 3;
