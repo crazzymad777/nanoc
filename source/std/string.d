@@ -40,3 +40,45 @@ void* memcpy(void* dest, const void* src, size_t n)
     }
     return dest;
 }
+
+unittest
+{
+    char[10] buffer = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+    memset(cast(char*) buffer, -5, 10);
+    for (int i = 0; i < 10; i++)
+    {
+        assert(buffer[i] == cast(char) -5);
+    }
+}
+
+unittest
+{
+    import nanoc.std.stdlib: _malloc, _free;
+    char[] source = cast(char[]) "Я падал в бездну, ниже ада, мимо всех чертей".ptr;
+    ulong length = strlen(cast(char*) source);
+    char* dest = cast(char*) _malloc(length+1);
+    memcpy(dest, cast(char*) source, length+1);
+    assert(strcmp(cast(char*) source, dest) == 0);
+    _free(dest);
+}
+
+extern(C) int strcmp(const char *s1, const char *s2)
+{
+    int i = 0;
+    while (s1[i] == s2[i])
+    {
+        i++;
+        if (s1[i] == '\0' || s2[i] == '\0') break;
+    }
+    return s1[i] - s2[i];
+}
+
+unittest
+{
+    immutable char* s1 = "Потом взлетал опять, пугая райских голубей".ptr;
+    immutable char* s2 = "Потом взлетал опять, пугая райских голубей".ptr;
+    immutable char* s3 = "Потом взлетал опять, пугая райских голубей3333".ptr;
+    assert(strcmp(s1, s2) == 0);
+    assert(strcmp(s1, s3) < 0);
+    assert(strcmp(s3, s2) > 0);
+}
