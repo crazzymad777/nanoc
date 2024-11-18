@@ -1,5 +1,5 @@
 name "nanoc"
-targetType "library"
+targetType "dynamicLibrary"
 description "Nano library C"
 authors "Yuriy Moskoff"
 copyright "Copyright © 2024, Yuriy Moskoff"
