@@ -125,6 +125,13 @@ MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
             subblock.flags = 0;
             return subblock;
         }
+
+        if (new_block_size - MemoryBlock.sizeof <= superblock.head.size)
+        {
+            // use head block
+            superblock.head.flags |= MemoryBlock.CLAIMED;
+            return &superblock.head;
+        }
         return null;
     }
     errno = EINVAL;
