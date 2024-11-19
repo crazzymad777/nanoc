@@ -128,7 +128,8 @@ MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
         if (new_block_size < superblock.head.size)
         {
             superblock.head.size -= new_block_size;
-            MemoryBlock* subblock = cast(MemoryBlock*) (&superblock.head.data + superblock.head.size);
+            byte* pointer = cast(byte*) &superblock.head.data + superblock.head.size;
+            MemoryBlock* subblock = cast(MemoryBlock*) pointer;
             subblock.size = new_block_size;
             subblock.flags = 0;
             return subblock;
