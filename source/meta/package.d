@@ -2,7 +2,7 @@ module nanoc.meta;
 
 import std.meta;
 
-version = DISABLE_METADATA;
+//version = DISABLE_METADATA;
 
 
 version (DISABLE_METADATA)
@@ -56,6 +56,7 @@ template Footprint()
         // mkdir!string("includes");
         // mkdir!string("includes/sys");
 
+        close(STDOUT_FILENO);
         foreach(mod; descriptors)
         {
             int fd = open( cast(const char*)("includes/" ~ mod.header).ptr, O_WRONLY | O_CREAT, 0);
