@@ -1,66 +1,56 @@
 module nanoc.meta;
 
-import nanoc.std.stdio;
-import nanoc.std.string;
-import std.traits;
 import std.meta;
 
-template MetaModule(string M)
+
+
+struct ModuleDescriptor
 {
-    void show()
+    this(string name, string header) immutable
     {
-        mixin("static import " ~ M ~ ";");
+        this.name = name;
+        this.header = header;
+    }
+    immutable string name;
+    immutable string header;
+}
 
-        alias module_alias = mixin(M);
-        foreach(x; __traits(allMembers, module_alias))
+template Footprint()
+{
+    void build()
+    {
+        import nanoc.std.stdio;
+        import nanoc.meta.mine;
+        import std.traits;
+
+        alias descriptors = AliasSeq!(
+            immutable ModuleDescriptor("nanoc.std.string", "string.h"),
+            immutable ModuleDescriptor("nanoc.std.stdlib", "stdlib.h"),
+            immutable ModuleDescriptor("nanoc.std.stdio", "stdio.h"),
+            immutable ModuleDescriptor("nanoc.std.unistd", "unistd.h"),
+            immutable ModuleDescriptor("nanoc.sys.mman", "sys/mman.h"),
+            immutable ModuleDescriptor("nanoc.sys.wait", "sys/wait.h")
+        );
+
+        //string result = "";
+        static foreach(mod; descriptors)
         {
-            alias member = __traits(getMember, module_alias, x);
-            static if (x == "SubModules")
-            {
-                foreach(mod; member)
-                {
-
-                    alias submodule = MetaModule!(M ~ "." ~ mod);
-                    submodule.show();
-                }
-            }
-            else
-            {
-                static if (!hasUDA!(member, "metaomit"))
-                {
-                    static if (__traits(isStaticFunction, member))
-                    {
-                        //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
-
-                        puts((ReturnType!member).stringof);
-                        putchar(' ');
-                        puts(x);
-                        putchar('(');
-                        int i = 0;
-                        foreach (p ; Parameters!member)
-                        {
-                            if (i > 0) puts(", ");
-                            puts(p.stringof);
-                            i++;
-                        }
-                        putchar(')');
-                        putchar(';');
-                        putchar(10);
-                    }
-                }
-            }
+            puts( MetaModule!(mod.name).mine().ptr );
         }
+        //return result;
     }
 }
 
 void footprint()
 {
-    //import nanoc.std.stdio;
-
-    foreach(mod; AliasSeq!("nanoc.std.string", "nanoc.std.stdlib", "nanoc.std.stdio", "nanoc.std.unistd", "nanoc.sys.mman", "nanoc.sys.wait"))
-    {
-        alias x = MetaModule!mod;
-        x.show();
-    }
+    import nanoc.std.stdio;
+    Footprint!().build();
 }
 
+/+
+immutable(string) footprint_module(string name)
+{
+    import nanoc.meta.mine;
+    alias x = MetaModule!name;
+    return x.mine();
+}+/
