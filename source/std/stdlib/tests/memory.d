@@ -56,7 +56,13 @@ unittest
     void*[number] ptrs;
     for (int i = 0; i < number; i++)
     {
-        ptrs[i] = cast(byte*) _malloc(8); // very tiny allocations
+        ptrs[i] = cast(byte*) _malloc(i%8+1); // very tiny allocations
+
+        if (i > 0)
+        {
+            assert(ptrs[i-1] != ptrs[i]);
+        }
+
         if (ptrs[i] is null)
         {
             assert(false, "very tiny _malloc failed");
