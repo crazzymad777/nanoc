@@ -2,7 +2,7 @@ module nanoc.meta;
 
 import std.meta;
 
-// version = DISABLE_METADATA;
+version = DISABLE_METADATA;
 
 
 version (DISABLE_METADATA)
