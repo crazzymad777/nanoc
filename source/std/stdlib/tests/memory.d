@@ -52,13 +52,19 @@ unittest
 
 unittest
 {
-    for (int i = 0; i < 4048*2; i++)
+    const number = 4048*2;
+    void*[number] ptrs;
+    for (int i = 0; i < number; i++)
     {
-        byte* bytes = cast(byte*) _malloc(8); // very tiny allocations
-        if (bytes is null)
+        ptrs[i] = cast(byte*) _malloc(8); // very tiny allocations
+        if (ptrs[i] is null)
         {
             assert(false, "very tiny _malloc failed");
         }
-        _free(bytes);
+    }
+
+    for (int i = 0; i < number; i++)
+    {
+        _free(ptrs[i]);
     }
 }
