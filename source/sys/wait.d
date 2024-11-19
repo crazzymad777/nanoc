@@ -19,6 +19,7 @@ int waitid(idtype_t idtype, id_t id, void* infop, int options)
 }
 
 // fifrh arguments: struct rusage *
+@("metaomit")
 int _syscall_wait_wrapper(idtype_t idtype, id_t id, void* infop, int options, void* usage)
 {
     import nanoc.os: syscall, SYS_waitid;

@@ -26,24 +26,27 @@ template MetaModule(string M)
             }
             else
             {
-                static if (__traits(isStaticFunction, member))
+                static if (!hasUDA!(member, "metaomit"))
                 {
-                    //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
-
-                    puts((ReturnType!member).stringof);
-                    putchar(' ');
-                    puts(x);
-                    putchar('(');
-                    int i = 0;
-                    foreach (p ; Parameters!member)
+                    static if (__traits(isStaticFunction, member))
                     {
-                        if (i > 0) puts(", ");
-                        puts(p.stringof);
-                        i++;
+                        //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
+
+                        puts((ReturnType!member).stringof);
+                        putchar(' ');
+                        puts(x);
+                        putchar('(');
+                        int i = 0;
+                        foreach (p ; Parameters!member)
+                        {
+                            if (i > 0) puts(", ");
+                            puts(p.stringof);
+                            i++;
+                        }
+                        putchar(')');
+                        putchar(';');
+                        putchar(10);
                     }
-                    putchar(')');
-                    putchar(';');
-                    putchar(10);
                 }
             }
         }
