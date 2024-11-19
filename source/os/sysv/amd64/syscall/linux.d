@@ -8,4 +8,5 @@ enum SYS_mmap = 9;
 enum SYS_munmap = 11;
 enum SYS_fork = 57;
 enum SYS_exit = 60;
+enum SYS_fcntl = 72;
 enum SYS_waitid = 247;

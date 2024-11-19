@@ -1,5 +1,12 @@
 module nanoc.meta.mine;
 
+import nanoc.meta;
+
+version (DISABLE_METADATA)
+{
+}
+else
+{
 import std.traits;
 import std.meta;
 import nanoc.std.stdio;
@@ -59,4 +66,5 @@ template MetaModule(string M, string H)
             }
         }
     }
+}
 }

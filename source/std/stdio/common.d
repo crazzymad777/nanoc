@@ -9,6 +9,9 @@ enum O_CREAT = 64;
 enum O_TRUNC = 512;
 enum O_APPEND = 1024;
 
+enum STDOUT_FILENO = 1;
+enum F_DUPFD = 0;
+
 extern(C) int puts(const char *str)
 {
     import nanoc.os: syscall, SYS_write;
@@ -65,4 +68,10 @@ extern(C) int close(int fd)
 {
     import nanoc.os: syscall, SYS_close;
     return cast(int) syscall(SYS_close, fd);
+}
+
+extern(C) int fcntl(T...)(int fd, int op, T args)
+{
+    import nanoc.os: syscall, SYS_fcntl;
+    return cast(int) syscall(fd, op, args);
 }
