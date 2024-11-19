@@ -3,8 +3,7 @@ module nanoc.std.stdio.format;
 import nanoc.std.stdio.common;
 import nanoc.std.stdio.file;
 
-import core.vararg;
-
+@("metaomit")
 int fprint_signed_int(FILE* stream, int value)
 {
     int nbytes = 0;
@@ -21,6 +20,7 @@ int fprint_signed_int(FILE* stream, int value)
     return nbytes + fprint_unsigned_int(stream, x);
 }
 
+@("metaomit")
 int fprint_unsigned_int(FILE* stream, uint value)
 {
     int nbytes = 0;
