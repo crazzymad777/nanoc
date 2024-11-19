@@ -30,9 +30,10 @@ unittest
     assert(smb.field.flags == MemoryBlock.NEXT_HEAP_POINTER);
     assert(smb.field.next_super_heap is null);
     assert(smb.head.flags == (MemoryBlock.NANOC_MEMORY | MemoryBlock.HEAD));
-    assert(smb.head.size == size - MemoryBlock.sizeof * 3);
+    assert(smb.head.size == size - MemoryBlock.sizeof * 4);
 
-    MemoryBlock* tail = cast(MemoryBlock*) (&smb.data + size - MemoryBlock.sizeof*4);
+    byte* tail_in_bytes = cast(byte*) &smb.data + size - MemoryBlock.sizeof*4;
+    MemoryBlock* tail = cast(MemoryBlock*) tail_in_bytes;
     assert(tail.flags == (MemoryBlock.NANOC_MEMORY | MemoryBlock.TAIL));
     assert(tail.head == &smb.head);
     assert(_init_super_block(MemoryBlock.sizeof*4-1) is null);

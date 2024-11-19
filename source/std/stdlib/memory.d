@@ -6,7 +6,10 @@ public import nanoc.std.stdlib.naive: _realloc;
 // Super memory block contains other memory blocks
 struct SuperMemoryBlock
 {
-    MemoryBlock entry;
+    union {
+        byte[0] begin;
+        MemoryBlock entry;
+    }
     MemoryBlock field;
     MemoryBlock head;
     byte[0] data;
@@ -102,9 +105,10 @@ void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
     superblock.field.next_super_heap = null;
 
     superblock.head.flags = NANOC_MEMORY | HEAD;
-    superblock.head.size = size - MemoryBlock.sizeof * 3;
+    superblock.head.size = size - MemoryBlock.sizeof * 4;
 
-    MemoryBlock* tail = cast(MemoryBlock*) (&superblock.data + size - MemoryBlock.sizeof*4);
+    byte* tail_in_bytes = cast(byte*)&superblock.begin + size;
+    MemoryBlock* tail = cast(MemoryBlock*) tail_in_bytes - 1;
     tail.flags = NANOC_MEMORY | MemoryBlock.TAIL;
     tail.head = &superblock.head;
 }
@@ -191,11 +195,13 @@ void unclaim_memory_block(MemoryBlock* single_block)
 
 size_t unclaim_memory_block(MemoryBlock* entry_block, MemoryBlock* block)
 {
-    alias CLAIMED = MemoryBlock.MemoryBlockFlagsOffset.CLAIMED;
-    MemoryBlock* next = cast(MemoryBlock*) (&block.data + block.size);
-
-    long flags = block.flags;
-    block.flags = flags & ~(1uL << CLAIMED);
+    unclaim_memory_block(block);
+    // MemoryBlock* next = cast(MemoryBlock*) (&block.data + block.size);
+    // if (next.flags & MemoryBlock.TAIL || next.flags & MemoryBlock.CLAIMED)
+    // {
+    //     return block.size;
+    // }
+    // return block.size + unclaim_memory_block(entry_block, next);
     return block.size;
 }
 
