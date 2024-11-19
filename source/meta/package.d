@@ -42,7 +42,7 @@ template Footprint()
 
         foreach(mod; descriptors)
         {
-            MetaModule!(mod.name, mod.header).mine();
+            MetaModule!(mod.name, mod.header, mod.name).mine();
         }
     }
 
@@ -62,7 +62,7 @@ template Footprint()
         {
             int fd = open( cast(const char*)("includes/" ~ mod.header).ptr, O_WRONLY | O_CREAT, std.conv.octal!"0644");
             fcntl(fd, F_DUPFD, STDOUT_FILENO);
-            MetaModule!(mod.name, mod.header).mine();
+            MetaModule!(mod.name, mod.header, mod.name).mine();
             close(fd);
         }
     }
@@ -71,6 +71,12 @@ template Footprint()
 void footprint()
 {
     Footprint!().write_modules();;
+    //
+}
+
+void footprint_all()
+{
+    Footprint!().build();;
     //
 }
 

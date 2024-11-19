@@ -21,7 +21,7 @@ void profit(string x)
     puts(x.ptr);
 }
 
-template MetaModule(string M, string H)
+template MetaModule(string M, string H, string G)
 {
     void mine()
     {
@@ -29,6 +29,18 @@ template MetaModule(string M, string H)
         {
             foreach(m; args) profit(m);
         }
+
+        if (M == G)
+        {
+            put_alias_seq("// module " ~ M ~ "\n");
+            put_alias_seq("// #ifndef NANOC_MODULE_ NAME _H\n");
+            put_alias_seq("// #define NANOC_MODULE_ NAME _H\n");
+        }
+        else
+        {
+            put_alias_seq("// submodule " ~ M ~ "\n");
+        }
+        put_alias_seq('\n');
 
         mixin("static import " ~ M ~ ";");
 
@@ -40,7 +52,7 @@ template MetaModule(string M, string H)
             {
                 foreach(mod; member)
                 {
-                    alias submodule = MetaModule!(M ~ "." ~ mod, H);
+                    alias submodule = MetaModule!(M ~ "." ~ mod, H, G);
                     submodule.mine();
                 }
             }
@@ -64,6 +76,15 @@ template MetaModule(string M, string H)
                     }
                 }
             }
+        }
+
+        if (M == G)
+        {
+            put_alias_seq("// #endif\n");
+        }
+        else
+        {
+            put_alias_seq("// submodule " ~ M ~ " end\n");
         }
     }
 }
