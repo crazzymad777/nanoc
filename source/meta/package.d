@@ -57,7 +57,7 @@ void footprint()
 {
     //import nanoc.std.stdio;
 
-    foreach(mod; AliasSeq!("nanoc.std.string", "nanoc.std.stdio", "nanoc.std.unistd", "nanoc.sys.mman", "nanoc.sys.wait"))
+    foreach(mod; AliasSeq!("nanoc.std.string", "nanoc.std.stdlib", "nanoc.std.stdio", "nanoc.std.unistd", "nanoc.sys.mman", "nanoc.sys.wait"))
     {
         alias x = MetaModule!mod;
         x.show();

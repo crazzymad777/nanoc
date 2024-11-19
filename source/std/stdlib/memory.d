@@ -53,6 +53,7 @@ __gshared SuperMemoryBlock* beginSuperBlock;
 
 extern(C)
 @("mmap_wrapper")
+@("metaomit")
 MemoryBlock* _allocate_primary_memory_block(size_t size)
 {
     import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
@@ -74,6 +75,7 @@ MemoryBlock* _allocate_primary_memory_block(size_t size)
 
 extern(C)
 @("mmap_wrapper")
+@("metaomit")
 SuperMemoryBlock* _init_super_block(size_t size)
 {
     import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
@@ -94,6 +96,7 @@ SuperMemoryBlock* _init_super_block(size_t size)
     return null;
 }
 
+@("metaomit")
 void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
 {
     alias HEAD_BLOCK_POINTER = MemoryBlock.HEAD_BLOCK_POINTER;
@@ -113,6 +116,7 @@ void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
     tail.head = &superblock.head;
 }
 
+@("metaomit")
 MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
 {
     if (superblock is null) return null;
@@ -187,16 +191,18 @@ void* _malloc(size_t size)
     return null;
 }
 
-void unclaim_memory_block(MemoryBlock* single_block)
+@("metaomit")
+void unclaim_single_memory_block(MemoryBlock* single_block)
 {
     alias CLAIMED = MemoryBlock.MemoryBlockFlagsOffset.CLAIMED;
     long flags = single_block.flags;
     single_block.flags = flags & ~(1uL << CLAIMED);
 }
 
+@("metaomit")
 size_t unclaim_memory_block(MemoryBlock* entry_block, MemoryBlock* block)
 {
-    unclaim_memory_block(block);
+    unclaim_single_memory_block(block);
     // MemoryBlock* next = cast(MemoryBlock*) (&block.data + block.size);
     // if (next.flags & MemoryBlock.TAIL || next.flags & MemoryBlock.CLAIMED)
     // {
@@ -219,7 +225,7 @@ void _free(void *ptr)
         {
             // Primary Superblock detected
             // It should be removed from primary superblock list
-            unclaim_memory_block(freed_block);
+            unclaim_single_memory_block(freed_block);
             // Now at least unclaim it
         }
         else
