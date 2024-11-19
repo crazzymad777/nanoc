@@ -180,7 +180,8 @@ extern (C) FILE* fopen(const char* filename, const char* mode)
             }
         }
 
-        f.raw_fd = open(filename, imode, 0);
+        import std.conv;
+        f.raw_fd = open(filename, imode, std.conv.octal!"0644"));
         if (f.raw_fd)
         {
             return f;
