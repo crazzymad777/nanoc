@@ -48,6 +48,7 @@ template Footprint()
 
     void write_modules()
     {
+        static import std.conv;
         import nanoc.std.stdio;
         import nanoc.meta.mine;
         import std.traits;
@@ -59,7 +60,7 @@ template Footprint()
         close(STDOUT_FILENO);
         foreach(mod; descriptors)
         {
-            int fd = open( cast(const char*)("includes/" ~ mod.header).ptr, O_WRONLY | O_CREAT, 0);
+            int fd = open( cast(const char*)("includes/" ~ mod.header).ptr, O_WRONLY | O_CREAT, std.conv.octal!"0644");
             fcntl(fd, F_DUPFD, STDOUT_FILENO);
             MetaModule!(mod.name, mod.header).mine();
             close(fd);
