@@ -18,14 +18,9 @@ template MetaModule(string M, string H)
 {
     void mine()
     {
-        void put_string(string x)
+        void put_alias_seq(T...)(T args)
         {
-            profit(x);
-        }
-
-        void put(char x)
-        {
-            profit(x);
+            foreach(m; args) profit(m);
         }
 
         mixin("static import " ~ M ~ ";");
@@ -50,20 +45,15 @@ template MetaModule(string M, string H)
                     {
                         //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
 
-                        put_string((ReturnType!member).stringof);
-                        put(' ');
-                        put_string(x);
-                        put('(');
+                        put_alias_seq((ReturnType!member).stringof, ' ', x, '(');
                         int i = 0;
                         foreach (p ; Parameters!member)
                         {
-                            if (i > 0) put_string(", ");
-                            put_string(p.stringof);
+                            if (i > 0) put_alias_seq(", ");
+                            put_alias_seq(p.stringof);
                             i++;
                         }
-                        put(')');
-                        put(';');
-                        put(10);
+                        put_alias_seq(");\n");
                     }
                 }
             }
