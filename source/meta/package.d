@@ -2,8 +2,6 @@ module nanoc.meta;
 
 import std.meta;
 
-
-
 struct ModuleDescriptor
 {
     this(string name, string header) immutable
@@ -35,7 +33,7 @@ template Footprint()
         //string result = "";
         static foreach(mod; descriptors)
         {
-            puts( MetaModule!(mod.name).mine().ptr );
+            MetaModule!(mod.name, mod.header).mine();
         }
         //return result;
     }

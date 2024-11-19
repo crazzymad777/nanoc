@@ -2,20 +2,30 @@ module nanoc.meta.mine;
 
 import std.traits;
 import std.meta;
+import nanoc.std.stdio;
 
-template MetaModule(string M)
+void profit(char x)
 {
-    immutable(string) mine() pure
+    putchar(x);
+}
+
+void profit(string x)
+{
+    puts(x.ptr);
+}
+
+template MetaModule(string M, string H)
+{
+    void mine()
     {
-        string result = "";
         void put_string(string x)
         {
-            result ~= x;
+            profit(x);
         }
 
         void put(char x)
         {
-            result ~= x;
+            profit(x);
         }
 
         mixin("static import " ~ M ~ ";");
@@ -28,8 +38,8 @@ template MetaModule(string M)
             {
                 foreach(mod; member)
                 {
-                    alias submodule = MetaModule!(M ~ "." ~ mod);
-                    put_string(submodule.mine());
+                    alias submodule = MetaModule!(M ~ "." ~ mod, H);
+                    submodule.mine();
                 }
             }
             else
@@ -58,6 +68,5 @@ template MetaModule(string M)
                 }
             }
         }
-        return result;
     }
 }
