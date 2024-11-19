@@ -1,35 +1,50 @@
 module nanoc.meta;
 
+import nanoc.std.stdio;
 import std.traits;
 import std.meta;
 
-
-void footprint()
+template MetaModule(string M)
 {
-    static import nanoc.std.string;
-    import nanoc.std.stdio;
-
-    import std.stdio: writeln;
-
-    foreach(m; __traits(derivedMembers, nanoc.std.string))
+    void show()
     {
-        alias member = __traits(getMember, nanoc.std.string, m);
-        static if (__traits(isStaticFunction, member))
+        mixin("static import " ~ M ~ ";");
+
+        alias module_alias = mixin(M);
+        foreach(x; __traits(allMembers, module_alias))
         {
-            puts((ReturnType!member).stringof);
-            putchar(' ');
-            puts(m);
-            putchar('(');
-            int i = 0;
-            foreach (p ; Parameters!member)
+            alias member = __traits(getMember, module_alias, x);
+            static if (__traits(isStaticFunction, member))
             {
-                if (i > 0) puts(", ");
-                puts(p.stringof);
-                i++;
+                //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
+
+                puts((ReturnType!member).stringof);
+                putchar(' ');
+                puts(x);
+                putchar('(');
+                int i = 0;
+                foreach (p ; Parameters!member)
+                {
+                    if (i > 0) puts(", ");
+                    puts(p.stringof);
+                    i++;
+                }
+                putchar(')');
+                putchar(';');
+                putchar(10);
             }
-            putchar(')');
-            putchar(';');
-            putchar(10);
         }
     }
 }
+
+void footprint()
+{
+    //import nanoc.std.stdio;
+
+    foreach(mod; AliasSeq!("nanoc.std.string", "nanoc.std.stdio", "nanoc.std.unistd", "nanoc.sys.mman", "nanoc.sys.wait"))
+    {
+        alias x = MetaModule!mod;
+        x.show();
+    }
+}
+
