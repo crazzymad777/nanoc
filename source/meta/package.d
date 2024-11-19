@@ -1,6 +1,7 @@
 module nanoc.meta;
 
 import nanoc.std.stdio;
+import nanoc.std.string;
 import std.traits;
 import std.meta;
 
@@ -14,24 +15,36 @@ template MetaModule(string M)
         foreach(x; __traits(allMembers, module_alias))
         {
             alias member = __traits(getMember, module_alias, x);
-            static if (__traits(isStaticFunction, member))
+            static if (x == "SubModules")
             {
-                //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
-
-                puts((ReturnType!member).stringof);
-                putchar(' ');
-                puts(x);
-                putchar('(');
-                int i = 0;
-                foreach (p ; Parameters!member)
+                foreach(mod; member)
                 {
-                    if (i > 0) puts(", ");
-                    puts(p.stringof);
-                    i++;
+
+                    alias submodule = MetaModule!(M ~ "." ~ mod);
+                    submodule.show();
                 }
-                putchar(')');
-                putchar(';');
-                putchar(10);
+            }
+            else
+            {
+                static if (__traits(isStaticFunction, member))
+                {
+                    //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
+
+                    puts((ReturnType!member).stringof);
+                    putchar(' ');
+                    puts(x);
+                    putchar('(');
+                    int i = 0;
+                    foreach (p ; Parameters!member)
+                    {
+                        if (i > 0) puts(", ");
+                        puts(p.stringof);
+                        i++;
+                    }
+                    putchar(')');
+                    putchar(';');
+                    putchar(10);
+                }
             }
         }
     }

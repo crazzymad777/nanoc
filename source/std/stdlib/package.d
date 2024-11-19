@@ -1,5 +1,8 @@
 module nanoc.std.stdlib;
 
+import std.meta: AliasSeq;
+alias SubModules = AliasSeq!("memory");
+
 /* Page per allocation... */
 /* Relese page when freed */
 // version = NANOC_NAIVE_MEMORY_ALLOCATION;
