@@ -132,7 +132,7 @@ template MetaModule(string M, string H, string G)
                                     }
                                     else if (is(T == union))
                                     {
-                                        put_alias_seq("// Enum: ", member.stringof, ";\n");
+                                        put_alias_seq("// Union: ", member.stringof, ";\n");
                                     }
                                     else
                                     {
