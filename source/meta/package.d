@@ -2,7 +2,7 @@ module nanoc.meta;
 
 import std.meta;
 
-//version = DISABLE_METADATA;
+// version = DISABLE_METADATA;
 
 
 version (DISABLE_METADATA)
@@ -60,7 +60,7 @@ template Footprint()
         close(STDOUT_FILENO);
         foreach(mod; descriptors)
         {
-            int fd = open( cast(const char*)("includes/" ~ mod.header).ptr, O_WRONLY | O_CREAT, std.conv.octal!"0644");
+            int fd = open( cast(const char*)("includes/" ~ mod.header).ptr, O_WRONLY | O_CREAT | O_TRUNC, std.conv.octal!"0644");
             fcntl(fd, F_DUPFD, STDOUT_FILENO);
             MetaModule!(mod.name, mod.header, mod.name).mine();
             close(fd);
