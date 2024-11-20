@@ -73,5 +73,11 @@ extern(C) int close(int fd)
 extern(C) int fcntl(T...)(int fd, int op, T args)
 {
     import nanoc.os: syscall, SYS_fcntl;
-    return cast(int) syscall(fd, op, args);
+    return cast(int) syscall(SYS_fcntl, fd, op, args);
+}
+
+extern(C) int fsync(int fd)
+{
+    import nanoc.os: syscall, SYS_fsync;
+    return cast(int) syscall(SYS_fsync, fd);
 }

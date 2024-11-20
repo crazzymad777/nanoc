@@ -11,14 +11,51 @@ import std.traits;
 import std.meta;
 import nanoc.std.stdio;
 
-void profit(char x)
+enum StreamModificator
 {
-    putchar(x);
+    NONE,
+    TRANSLATE
 }
 
-void profit(string x)
+static StreamModificator sm = StreamModificator.NONE;
+
+void profit(char x)
 {
-    puts(x.ptr);
+    import nanoc.std.ctype: toupper;
+    if (sm == StreamModificator.TRANSLATE)
+    {
+        x = cast(char) toupper(cast(int) x);
+    }
+    if (x == '.')
+    {
+        x = '_';
+    }
+    if (x == '/')
+    {
+        x = '_';
+    }
+    putchar(x);
+    //fsync(STDOUT_FILENO);
+}
+
+void profit(string y)
+{
+    if (sm == StreamModificator.TRANSLATE)
+    {
+        foreach (x; y)
+        {
+            profit(x);
+        }
+    }
+    else
+    {
+        puts(y.ptr);
+    }
+}
+
+void profit(StreamModificator m)
+{
+    sm = m;
 }
 
 template MetaModule(string M, string H, string G)
@@ -32,9 +69,9 @@ template MetaModule(string M, string H, string G)
 
         if (M == G)
         {
-            put_alias_seq("// module " ~ M ~ "\n");
-            put_alias_seq("// #ifndef NANOC_MODULE_ NAME _H\n");
-            put_alias_seq("// #define NANOC_MODULE_ NAME _H\n");
+            put_alias_seq("// module ", StreamModificator.TRANSLATE, M, StreamModificator.NONE, "\n");
+            put_alias_seq("#ifndef NANOC_MODULE_", StreamModificator.TRANSLATE, H, StreamModificator.NONE, "\n");
+            put_alias_seq("#define NANOC_MODULE_", StreamModificator.TRANSLATE, H, StreamModificator.NONE, "\n");
         }
         else
         {
@@ -80,7 +117,7 @@ template MetaModule(string M, string H, string G)
 
         if (M == G)
         {
-            put_alias_seq("// #endif\n");
+            put_alias_seq("#endif\n");
         }
         else
         {
