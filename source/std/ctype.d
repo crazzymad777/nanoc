@@ -11,12 +11,12 @@ unittest
 }
 
 // for ASCII
-extern(C) int toupper(int x)
+extern(C) int toupper(int x) pure
 {
     return islower(x) ? x - ('a' - 'A') : x;
 }
 
-extern (C) int tolower(int x)
+extern (C) int tolower(int x) pure
 {
     return isupper(x) ? x - ('A' - 'a') : x;
 }
@@ -111,7 +111,7 @@ extern (C) int isprint(int x) pure
     return false;
 }
 
-extern (C) int isgraph(int x)
+extern (C) int isgraph(int x) pure
 {
      if (x > 0x20 && x != 0x7F)
     {
@@ -120,7 +120,7 @@ extern (C) int isgraph(int x)
     return false;
 }
 
-extern (C) int ispunct(int x)
+extern (C) int ispunct(int x) pure
 {
     return isgraph(x) && !isalnum(x);
 }
