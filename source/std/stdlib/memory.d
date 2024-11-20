@@ -129,6 +129,11 @@ MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
     if (superblock.entry.flags & MemoryBlock.NANOC_MEMORY)
     {
         size_t new_block_size = size + MemoryBlock.sizeof;
+        if (new_block_size % 2 == 1)
+        {
+            new_block_size += 1;
+        }
+
         if (new_block_size < superblock.head.size)
         {
             superblock.head.size -= new_block_size;

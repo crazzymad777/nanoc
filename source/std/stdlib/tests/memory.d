@@ -57,6 +57,7 @@ unittest
     for (int i = 0; i < number; i++)
     {
         ptrs[i] = cast(byte*) _malloc(i%8+1); // very tiny allocations
+        assert(cast(int)ptrs[i] % 2 == 0);
 
         if (i > 0)
         {
