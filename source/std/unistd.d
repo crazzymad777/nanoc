@@ -34,3 +34,15 @@ unittest {
         assert(false, "waitid failed");
     }
 }
+
+extern (C) int rmdir(const char* pathname)
+{
+    import nanoc.os: syscall, SYS_rmdir;
+    return cast(int) syscall(SYS_rmdir, pathname);
+}
+
+extern (C) int unlink(const char* pathname)
+{
+    import nanoc.os: syscall, SYS_unlink;
+    return cast(int) syscall(SYS_unlink, pathname);
+}
