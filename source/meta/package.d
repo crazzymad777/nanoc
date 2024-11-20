@@ -32,6 +32,7 @@ template Footprint()
         immutable ModuleDescriptor("nanoc.sys.mman", "sys/mman.h"),
         immutable ModuleDescriptor("nanoc.sys.wait", "sys/wait.h"),
         immutable ModuleDescriptor("nanoc.std.ctype", "ctype.h"),
+        immutable ModuleDescriptor("nanoc.std.errno", "errno.h"),
         immutable ModuleDescriptor("nanoc.os", "sys/syscall.h")
     );
 
@@ -44,7 +45,7 @@ template Footprint()
 
         foreach(mod; descriptors)
         {
-            MetaModule!(mod.name, mod.header, mod.name).mine();
+            show_meta_module!(mod.name, mod.header, mod.name)();
         }
     }
 
@@ -64,7 +65,7 @@ template Footprint()
         {
             int fd = open( cast(const char*)("includes/" ~ mod.header).ptr, O_WRONLY | O_CREAT | O_TRUNC, std.conv.octal!"0644");
             fcntl(fd, F_DUPFD, STDOUT_FILENO);
-            MetaModule!(mod.name, mod.header, mod.name).mine();
+            show_meta_module!(mod.name, mod.header, mod.name)();
             close(fd);
         }
     }

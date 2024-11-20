@@ -58,112 +58,121 @@ void profit(StreamModificator m)
     sm = m;
 }
 
-template MetaModule(string M, string H, string G)
+void put_alias_seq(T...)(T args)
 {
-    void mine()
-    {
-        void put_alias_seq(T...)(T args)
-        {
-            foreach(m; args) profit(m);
-        }
+    foreach(m; args) profit(m);
+}
 
-        if (M == G)
+void show_meta_member(string x, alias member)()
+{
+    static if (__traits(isStaticFunction, member))
+    {
+        //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
+
+        put_alias_seq((ReturnType!member).stringof, ' ', x, '(');
+        int i = 0;
+        foreach (p ; Parameters!member)
         {
-            put_alias_seq("#ifndef NANOC_MODULE_", StreamModificator.TRANSLATE, H, StreamModificator.NONE, "\n");
-            put_alias_seq("#define NANOC_MODULE_", StreamModificator.TRANSLATE, H, StreamModificator.NONE, "\n");
-            put_alias_seq("// module: " ~ M ~ "\n");
+            if (i > 0) put_alias_seq(", ");
+            put_alias_seq(p.stringof);
+            i++;
+        }
+        put_alias_seq(");\n");
+    } else {
+        static if (__traits(isTemplate, member)) {
+            put_alias_seq("// template: ", member.stringof, ' ', x, ";\n");
+        }
+        else if (__traits(isModule, member) || __traits(isPackage, member))
+        {
         }
         else
         {
-            put_alias_seq("// submodule: " ~ M ~ "\n");
-        }
-
-        mixin("static import " ~ M ~ ";");
-
-        alias module_alias = mixin(M);
-        foreach(x; __traits(allMembers, module_alias))
-        {
-            alias member = __traits(getMember, module_alias, x);
-            static if (x == "SubModules")
+            static if (isType!member)
             {
-                foreach(mod; member)
+                alias T = CommonType!member;
+                static if (isAggregateType!T)
                 {
-                    alias submodule = MetaModule!(M ~ "." ~ mod, H, G);
-                    submodule.mine();
+                    static if (is(T == enum)) {
+                        put_alias_seq("// Enum: ", member.stringof, "\n");
+                    }
+                    else if (is(T == struct))
+                    {
+                        put_alias_seq("struct ", member.stringof, " {};\n");
+                    }
+                    else if (is(T == union))
+                    {
+                        put_alias_seq("// Union: ", member.stringof, "\n");
+                    }
+                    else
+                    {
+                        put_alias_seq("// Aggregate Type: ", member.stringof, "\n");
+                    }
+                }
+                else
+                {
+                    put_alias_seq("typedef ", member.stringof, ' ', x, ";\n");
                 }
             }
             else
             {
-                static if (!hasUDA!(member, "metaomit"))
+                static if (x == member.stringof && !is(member : string))
                 {
-                    static if (__traits(isStaticFunction, member))
-                    {
-                        //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
-
-                        put_alias_seq((ReturnType!member).stringof, ' ', x, '(');
-                        int i = 0;
-                        foreach (p ; Parameters!member)
-                        {
-                            if (i > 0) put_alias_seq(", ");
-                            put_alias_seq(p.stringof);
-                            i++;
-                        }
-                        put_alias_seq(");\n");
-                    } else {
-                        static if (__traits(isTemplate, member)) {
-                            put_alias_seq("// template: ", member.stringof, ' ', x, ";\n");
-                        }
-                        else if (__traits(isModule, member) || __traits(isPackage, member))
-                        {
-                        }
-                        else
-                        {
-                            static if (isType!member)
-                            {
-                                alias T = CommonType!member;
-                                static if (isAggregateType!T)
-                                {
-                                    static if (is(T == enum)) {
-                                        put_alias_seq("// Enum: ", member.stringof, ";\n");
-                                    }
-                                    else if (is(T == struct))
-                                    {
-                                        put_alias_seq("// Struct: ", member.stringof, ";\n");
-                                    }
-                                    else if (is(T == union))
-                                    {
-                                        put_alias_seq("// Union: ", member.stringof, ";\n");
-                                    }
-                                    else
-                                    {
-                                        put_alias_seq("// Aggregate Type: ", member.stringof, ";\n");
-                                    }
-                                }
-                                else
-                                {
-                                    put_alias_seq("typedef ", member.stringof, ' ', x, ";\n");
-                                }
-                            }
-                            else
-                            {
-                                put_alias_seq("#define ", x, " ", member.stringof, "\n");
-                            }
-                        }
-
-                        // pragma(msg, member);
-                    }
+                    put_alias_seq("extern ", (CommonType!member).stringof , " ", x, ";\n");
+                }
+                else
+                {
+                    put_alias_seq("#define ", x, " ", member.stringof, "\n");
                 }
             }
         }
 
-        if (M == G)
+        // pragma(msg, member);
+    }
+}
+
+
+void show_meta_module(string M, string H, string G)()
+{
+    if (M == G)
+    {
+        put_alias_seq("#ifndef NANOC_MODULE_", StreamModificator.TRANSLATE, H, StreamModificator.NONE, "\n");
+        put_alias_seq("#define NANOC_MODULE_", StreamModificator.TRANSLATE, H, StreamModificator.NONE, "\n");
+        put_alias_seq("// module: " ~ M ~ "\n");
+    }
+    else
+    {
+        put_alias_seq("// submodule: " ~ M ~ "\n");
+    }
+
+    mixin("static import " ~ M ~ ";");
+
+    alias module_alias = mixin(M);
+    foreach(x; __traits(allMembers, module_alias))
+    {
+        alias member = __traits(getMember, module_alias, x);
+        static if (x == "SubModules")
         {
-            put_alias_seq("#endif\n");
+            foreach(mod; member)
+            {
+                show_meta_module!(M ~ "." ~ mod, H, G)();
+            }
         }
         else
         {
-            put_alias_seq("// submodule " ~ M ~ " end\n");
+            static if (!hasUDA!(member, "metaomit"))
+            {
+                show_meta_member!(x, member)();
+            }
         }
+    }
+
+    if (M == G)
+    {
+        put_alias_seq("#endif\n");
+    }
+    else
+    {
+        put_alias_seq("// submodule " ~ M ~ " end\n");
     }
 }
 }
