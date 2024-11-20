@@ -1,12 +1,20 @@
 module nanoc.os.sysv.amd64.syscall;
 
-struct syscall_response {
+private
+struct SyscallResponse {
         long result;
         long raw; // -4095 means failure
 };
 
-extern (System) syscall_response raw_syscall(long fn, ...);
+/++
+    Actual system caller implemented in ASM (raw_syscall.s)
++/
+extern (System) SyscallResponse raw_syscall(long fn, ...);
 
+/++
+    D Wrapper for raw_syscall
+    sets nanoc errno
++/
 extern (System) long syscall(T...)(T args)
 {
     import nanoc.std.errno: errno;

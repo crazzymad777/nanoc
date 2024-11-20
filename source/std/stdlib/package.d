@@ -11,6 +11,7 @@ version = NANOC_MEMORY_ALLOCATION;
 
 extern (C)
 {
+    /// Terminate a process
     noreturn exit(int status)
     {
         import nanoc.utils.noreturn: never_be_reached;

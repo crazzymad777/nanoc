@@ -44,7 +44,7 @@ void* memcpy(void* dest, const void* src, size_t n)
 unittest
 {
     char[10] buffer = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-    memset(cast(char*) buffer, -5, 10);
+    assert(memset(cast(char*) buffer, -5, 10) == cast(void*) buffer);
     for (int i = 0; i < 10; i++)
     {
         assert(buffer[i] == cast(char) -5);
@@ -57,11 +57,12 @@ unittest
     char[] source = cast(char[]) "Я падал в бездну, ниже ада, мимо всех чертей".ptr;
     ulong length = strlen(cast(char*) source);
     char* dest = cast(char*) _malloc(length+1);
-    memcpy(dest, cast(char*) source, length+1);
+    assert(memcpy(dest, cast(char*) source, length+1) == cast(void*) dest);
     assert(strcmp(cast(char*) source, dest) == 0);
     _free(dest);
 }
 
+/// Compares two strings
 extern(C) int strcmp(const char *s1, const char *s2)
 {
     int i = 0;

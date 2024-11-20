@@ -1,5 +1,6 @@
 module nanoc.std.unistd;
 
+/// Create child process
 extern (C) int fork()
 {
     import nanoc.os: syscall, SYS_fork;

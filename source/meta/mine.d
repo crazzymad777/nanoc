@@ -11,15 +11,18 @@ import std.traits;
 import std.meta;
 import nanoc.std.stdio;
 
+private
 enum StreamModificator
 {
     NONE,
     TRANSLATE
 }
 
+private
 static StreamModificator sm = StreamModificator.NONE;
 
-void profit(char x)
+/// Print character
+private void profit(char x)
 {
     import nanoc.std.ctype: toupper;
     if (sm == StreamModificator.TRANSLATE)
@@ -38,7 +41,8 @@ void profit(char x)
     //fsync(STDOUT_FILENO);
 }
 
-void profit(string y)
+/// Print string
+private void profit(string y)
 {
     if (sm == StreamModificator.TRANSLATE)
     {
@@ -53,16 +57,18 @@ void profit(string y)
     }
 }
 
-void profit(StreamModificator m)
+/// Change stream modificator
+private void profit(StreamModificator m)
 {
     sm = m;
 }
 
-void put_alias_seq(T...)(T args)
+private void put_alias_seq(T...)(T args)
 {
     foreach(m; args) profit(m);
 }
 
+/// Prints declaration of static function, struct, enum, union, variable or constant
 void show_meta_member(string x, alias member)()
 {
     static if (__traits(isStaticFunction, member))
@@ -95,11 +101,11 @@ void show_meta_member(string x, alias member)()
                     static if (is(T == enum)) {
                         put_alias_seq("// Enum: ", member.stringof, "\n");
                     }
-                    else if (is(T == struct))
+                    else static if (is(T == struct))
                     {
                         put_alias_seq("struct ", member.stringof, " {};\n");
                     }
-                    else if (is(T == union))
+                    else static if (is(T == union))
                     {
                         put_alias_seq("// Union: ", member.stringof, "\n");
                     }
@@ -130,7 +136,7 @@ void show_meta_member(string x, alias member)()
     }
 }
 
-
+/// Prints module declaration
 void show_meta_module(string M, string H, string G)()
 {
     if (M == G)

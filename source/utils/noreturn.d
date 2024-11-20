@@ -1,6 +1,7 @@
 module nanoc.utils.noreturn;
 
-extern (C) noreturn never_be_reached()
+/// No return function
+noreturn never_be_reached()
 {
     assert(false, "never be reached");
 }

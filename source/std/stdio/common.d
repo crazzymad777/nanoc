@@ -46,6 +46,7 @@ extern(C) int getchar()
     return EOF;
 }
 
+/// open and possibly create a file
 extern(C) int open(const char *pathname, int flags, mode_t mode)
 {
     import nanoc.os: syscall, SYS_open;
@@ -64,6 +65,7 @@ extern(C) size_t read(int fd, void[] buf, size_t count)
     return syscall(SYS_read, fd, cast(void*) buf, count);
 }
 
+/// close a file descriptor
 extern(C) int close(int fd)
 {
     import nanoc.os: syscall, SYS_close;
