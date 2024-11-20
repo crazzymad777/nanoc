@@ -11,11 +11,13 @@ unittest
 }
 
 // for ASCII
+/// Converts uppercase letter to lowercase
 extern(C) int toupper(int x) pure
 {
     return islower(x) ? x - ('a' - 'A') : x;
 }
 
+/// Converts lowercase letter to uppercase
 extern (C) int tolower(int x) pure
 {
     return isupper(x) ? x - ('A' - 'a') : x;
