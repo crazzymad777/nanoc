@@ -69,15 +69,14 @@ template MetaModule(string M, string H, string G)
 
         if (M == G)
         {
-            put_alias_seq("// module ", StreamModificator.TRANSLATE, M, StreamModificator.NONE, "\n");
             put_alias_seq("#ifndef NANOC_MODULE_", StreamModificator.TRANSLATE, H, StreamModificator.NONE, "\n");
             put_alias_seq("#define NANOC_MODULE_", StreamModificator.TRANSLATE, H, StreamModificator.NONE, "\n");
+            put_alias_seq("// module: " ~ M ~ "\n");
         }
         else
         {
-            put_alias_seq("// submodule " ~ M ~ "\n");
+            put_alias_seq("// submodule: " ~ M ~ "\n");
         }
-        put_alias_seq('\n');
 
         mixin("static import " ~ M ~ ";");
 
@@ -110,6 +109,33 @@ template MetaModule(string M, string H, string G)
                             i++;
                         }
                         put_alias_seq(");\n");
+                    } else {
+                        static if (__traits(isTemplate, member)) {
+                            put_alias_seq("// template: ", member.stringof, ' ', x, ";\n");
+                        }
+                        else if (__traits(isModule, member) || __traits(isPackage, member))
+                        {
+                        }
+                        else
+                        {
+                            static if (isType!member)
+                            {
+                                static if (!isAggregateType!(CommonType!member))
+                                {
+                                    put_alias_seq("typedef ", member.stringof, ' ', x, ";\n");
+                                }
+                                else
+                                {
+                                    put_alias_seq("// Not Basic Type: ", member.stringof, ' ', x, ";\n");
+                                }
+                            }
+                            else
+                            {
+                                put_alias_seq("#define ", x, " ", member.stringof, "\n");
+                            }
+                        }
+
+                        // pragma(msg, member);
                     }
                 }
             }

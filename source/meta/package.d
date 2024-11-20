@@ -2,7 +2,7 @@ module nanoc.meta;
 
 import std.meta;
 
-version = DISABLE_METADATA;
+//version = DISABLE_METADATA;
 
 
 version (DISABLE_METADATA)
@@ -31,7 +31,8 @@ template Footprint()
         immutable ModuleDescriptor("nanoc.std.unistd", "unistd.h"),
         immutable ModuleDescriptor("nanoc.sys.mman", "sys/mman.h"),
         immutable ModuleDescriptor("nanoc.sys.wait", "sys/wait.h"),
-        immutable ModuleDescriptor("nanoc.std.ctype", "ctype.h")
+        immutable ModuleDescriptor("nanoc.std.ctype", "ctype.h"),
+        immutable ModuleDescriptor("nanoc.os", "sys/syscall.h")
     );
 
     void build()
