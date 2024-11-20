@@ -10,4 +10,5 @@ enum SYS_fork = 57;
 enum SYS_exit = 60;
 enum SYS_fcntl = 72;
 enum SYS_fsync = 74;
+enum SYS_mkdir = 83;
 enum SYS_waitid = 247;
