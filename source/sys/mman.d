@@ -3,6 +3,7 @@ module nanoc.sys.mman;
 alias off_t = long;
 enum PROT_READ = 1;
 enum PROT_WRITE = 2;
+enum MAP_SHARED = 0x0001;
 enum MAP_PRIVATE = 0x0002;
 enum MAP_ANONYMOUS = 0x0020;
 

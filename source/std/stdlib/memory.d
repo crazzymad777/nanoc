@@ -169,7 +169,8 @@ MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
     return null;
 }
 
-void* _malloc(size_t size)
+extern (C)
+void* malloc(size_t size)
 {
     if (beginSuperBlock is null)
     {
@@ -217,7 +218,8 @@ size_t unclaim_memory_block(MemoryBlock* entry_block, MemoryBlock* block)
     return block.size;
 }
 
-void _free(void *ptr)
+extern (C)
+void free(void *ptr)
 {
     alias SUPERBLOCK = MemoryBlock.SUPERBLOCK;
     alias PRIMARY = MemoryBlock.PRIMARY;
@@ -248,3 +250,6 @@ void _free(void *ptr)
         // If super block don't have claimed blocks then free superblock
     }
 }
+
+alias _malloc = malloc;
+alias _free = free;
