@@ -120,13 +120,28 @@ template MetaModule(string M, string H, string G)
                         {
                             static if (isType!member)
                             {
-                                static if (!isAggregateType!(CommonType!member))
+                                alias T = CommonType!member;
+                                static if (isAggregateType!T)
                                 {
-                                    put_alias_seq("typedef ", member.stringof, ' ', x, ";\n");
+                                    static if (is(T == enum)) {
+                                        put_alias_seq("// Enum: ", member.stringof, ";\n");
+                                    }
+                                    else if (is(T == struct))
+                                    {
+                                        put_alias_seq("// Struct: ", member.stringof, ";\n");
+                                    }
+                                    else if (is(T == union))
+                                    {
+                                        put_alias_seq("// Enum: ", member.stringof, ";\n");
+                                    }
+                                    else
+                                    {
+                                        put_alias_seq("// Aggregate Type: ", member.stringof, ";\n");
+                                    }
                                 }
                                 else
                                 {
-                                    put_alias_seq("// Not Basic Type: ", member.stringof, ' ', x, ";\n");
+                                    put_alias_seq("typedef ", member.stringof, ' ', x, ";\n");
                                 }
                             }
                             else
