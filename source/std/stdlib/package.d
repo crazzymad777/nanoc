@@ -14,6 +14,9 @@ extern (C)
     /// Terminate a process
     noreturn exit(int status)
     {
+        import nanoc.entry;
+        __nanoc_fini();
+
         import nanoc.utils.noreturn: never_be_reached;
         import nanoc.os: syscall, SYS_exit;
         syscall(SYS_exit, status);

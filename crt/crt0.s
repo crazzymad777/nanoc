@@ -1,3 +1,4 @@
+.file "crt0.s"
 .section .text
 .intel_syntax noprefix
 
@@ -8,6 +9,13 @@ _start:
 	push RBP
 	mov RBP, RSP
 
+	push RSI
+	push RDI
+	call __nanoc_init
+	call _init
+
+	pop RDI
+	pop RDI
 	call __nanoc_main
 
 	mov EDI, EAX
