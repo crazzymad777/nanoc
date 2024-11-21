@@ -899,13 +899,11 @@ struct Elf32_Dyn
 
     /* Integer value */
     /* Address value */
-    union union (unnamed at elf.h:866:3)
+    union d_un
     {
         Elf32_Word d_val;
         Elf32_Addr d_ptr;
     }
-
-    union (unnamed at elf.h:866:3) d_un;
 }
 
 struct Elf64_Dyn
@@ -914,13 +912,11 @@ struct Elf64_Dyn
 
     /* Integer value */
     /* Address value */
-    union union (unnamed at elf.h:876:3)
+    union d_un
     {
         Elf64_Xword d_val;
         Elf64_Addr d_ptr;
     }
-
-    union (unnamed at elf.h:876:3) d_un;
 }
 
 /* Legal values for d_tag (dynamic entry type).  */
