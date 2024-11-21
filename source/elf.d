@@ -18,6 +18,40 @@
 
 module nanoc.elf;
 
+/* Standard ELF types.  */
+
+/* Type for a 16-bit quantity.  */
+alias Elf32_Half = ushort;
+alias Elf64_Half = ushort;
+
+/* Types for signed and unsigned 32-bit quantities.  */
+alias Elf32_Word = uint;
+alias Elf32_Sword = int;
+alias Elf64_Word = uint;
+alias Elf64_Sword = int;
+
+/* Types for signed and unsigned 64-bit quantities.  */
+alias Elf32_Xword = ulong;
+alias Elf32_Sxword = long;
+alias Elf64_Xword = ulong;
+alias Elf64_Sxword = long;
+
+/* Type of addresses.  */
+alias Elf32_Addr = uint;
+alias Elf64_Addr = long;
+
+/* Type of file offsets.  */
+alias Elf32_Off = uint;
+alias Elf64_Off = ulong;
+
+/* Type for section indices, which are 16-bit quantities.  */
+alias Elf32_Section = ushort;
+alias Elf64_Section = ushort;
+
+/* Type for version symbol information.  */
+alias Elf32_Versym = ushort;
+alias Elf64_Versym = ushort;
+
 /* Auxiliary vector.  */
 
 /* This vector is normally only used by the program interpreter.  The
@@ -136,3 +170,68 @@ enum AT_L3_CACHEGEOMETRY = 47;
 
 enum AT_MINSIGSTKSZ = 51; /* Stack needed for signal delivery  */
 enum NANOC_AT_MAX = AT_MINSIGSTKSZ + 1;
+
+/* Program segment header.  */
+
+struct Elf32_Phdr
+{
+    Elf32_Word p_type; /* Segment type */
+    Elf32_Off p_offset; /* Segment file offset */
+    Elf32_Addr p_vaddr; /* Segment virtual address */
+    Elf32_Addr p_paddr; /* Segment physical address */
+    Elf32_Word p_filesz; /* Segment size in file */
+    Elf32_Word p_memsz; /* Segment size in memory */
+    Elf32_Word p_flags; /* Segment flags */
+    Elf32_Word p_align; /* Segment alignment */
+}
+
+struct Elf64_Phdr
+{
+    Elf64_Word p_type; /* Segment type */
+    Elf64_Word p_flags; /* Segment flags */
+    Elf64_Off p_offset; /* Segment file offset */
+    Elf64_Addr p_vaddr; /* Segment virtual address */
+    Elf64_Addr p_paddr; /* Segment physical address */
+    Elf64_Xword p_filesz; /* Segment size in file */
+    Elf64_Xword p_memsz; /* Segment size in memory */
+    Elf64_Xword p_align; /* Segment alignment */
+}
+
+/* Special value for e_phnum.  This indicates that the real number of
+   program headers is too large to fit into e_phnum.  Instead the real
+   value is in the field sh_info of section 0.  */
+
+enum PN_XNUM = 0xffff;
+
+/* Legal values for p_type (segment type).  */
+
+enum PT_NULL = 0; /* Program header table entry unused */
+enum PT_LOAD = 1; /* Loadable program segment */
+enum PT_DYNAMIC = 2; /* Dynamic linking information */
+enum PT_INTERP = 3; /* Program interpreter */
+enum PT_NOTE = 4; /* Auxiliary information */
+enum PT_SHLIB = 5; /* Reserved */
+enum PT_PHDR = 6; /* Entry for header table itself */
+enum PT_TLS = 7; /* Thread-local storage segment */
+enum PT_NUM = 8; /* Number of defined types */
+enum PT_LOOS = 0x60000000; /* Start of OS-specific */
+enum PT_GNU_EH_FRAME = 0x6474e550; /* GCC .eh_frame_hdr segment */
+enum PT_GNU_STACK = 0x6474e551; /* Indicates stack executability */
+enum PT_GNU_RELRO = 0x6474e552; /* Read-only after relocation */
+enum PT_GNU_PROPERTY = 0x6474e553; /* GNU property */
+enum PT_GNU_SFRAME = 0x6474e554; /* SFrame segment.  */
+enum PT_LOSUNW = 0x6ffffffa;
+enum PT_SUNWBSS = 0x6ffffffa; /* Sun Specific segment */
+enum PT_SUNWSTACK = 0x6ffffffb; /* Stack segment */
+enum PT_HISUNW = 0x6fffffff;
+enum PT_HIOS = 0x6fffffff; /* End of OS-specific */
+enum PT_LOPROC = 0x70000000; /* Start of processor-specific */
+enum PT_HIPROC = 0x7fffffff; /* End of processor-specific */
+
+/* Legal values for p_flags (segment flags).  */
+
+enum PF_X = 1 << 0; /* Segment is executable */
+enum PF_W = 1 << 1; /* Segment is writable */
+enum PF_R = 1 << 2; /* Segment is readable */
+enum PF_MASKOS = 0x0ff00000; /* OS-specific */
+enum PF_MASKPROC = 0xf0000000; /* Processor-specific */
