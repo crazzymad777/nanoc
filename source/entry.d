@@ -5,8 +5,7 @@ extern(C)
     void __nanoc_init(int argc, char** argv, char **envp)
     {
         import nanoc.elf;
-        const AUX_CNT = AT_MINSIGSTKSZ + 1;
-        ulong[AUX_CNT] _aux;
+        ulong[NANOC_AT_MAX] _aux;
 
         int i;
         for (i = 0; envp[i] !is null; i++) { }
@@ -14,7 +13,7 @@ extern(C)
 
         for (i = 0; auxv[i]; i += 2)
         {
-            if (auxv[i] < AUX_CNT)
+            if (auxv[i] < NANOC_AT_MAX)
             {
                 _aux[auxv[i]] = auxv[i+1];
             }
