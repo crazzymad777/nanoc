@@ -4,7 +4,8 @@ extern(C)
 {
     void __nanoc_init(int argc, char** argv, char **envp)
     {
-        const AUX_CNT = 38;
+        import nanoc.elf;
+        const AUX_CNT = AT_MINSIGSTKSZ + 1;
         ulong[AUX_CNT] _aux;
 
         int i;

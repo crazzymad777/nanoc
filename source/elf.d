@@ -1223,12 +1223,10 @@ struct Elf32_auxv_t
     /* We use to have pointer elements added here.  We cannot do that,
     	 though, since it does not work when using 32-bit definitions
     	 on 64-bit platforms and vice versa.  */
-    union union (unnamed at elf.h:1171:3)
+    union a_un
     {
         uint a_val;
     }
-
-    union (unnamed at elf.h:1171:3) a_un;
 }
 
 struct Elf64_auxv_t
@@ -1239,12 +1237,10 @@ struct Elf64_auxv_t
     /* We use to have pointer elements added here.  We cannot do that,
     	 though, since it does not work when using 32-bit definitions
     	 on 64-bit platforms and vice versa.  */
-    union union (unnamed at elf.h:1183:3)
+    union a_un
     {
         ulong a_val;
     }
-
-    union (unnamed at elf.h:1183:3) a_un;
 }
 
 /* Legal values for a_type (entry type).  */
@@ -1928,23 +1924,22 @@ union Elf32_gptab
 {
     /* -G value used for compilation.  */
     /* Not used.  */
-    struct struct (unnamed at elf.h:1863:3)
+    struct gt_header
     {
         Elf32_Word gt_current_g_value;
         Elf32_Word gt_unused;
     }
-
-    struct (unnamed at elf.h:1863:3) gt_header; /* First entry in section.  */
+    /* First entry in section.  */
 
     /* If this value were used for -G.  */
     /* This many bytes would be used.  */
-    struct struct (unnamed at elf.h:1868:3)
+    struct gt_entry
     {
         Elf32_Word gt_g_value;
         Elf32_Word gt_bytes;
     }
 
-    struct (unnamed at elf.h:1868:3) gt_entry; /* Subsequent entries in section.  */
+    /* Subsequent entries in section.  */
 }
 
 /* Entry found in sections of type SHT_MIPS_REGINFO.  */
@@ -2341,7 +2336,7 @@ enum MIPS_AFL_EXT_LOONGSON_2F = 18; /* ST Microelectronics Loongson 2F.  */
 enum MIPS_AFL_FLAGS1_ODDSPREG = 1; /* Uses odd single-precision registers.  */
 
 /* Object attribute values.  */
-enum enum (unnamed at elf.h:2270:1)
+enum
 {
     /* Not tagged or not using any ABIs affected by the differences.  */
     Val_GNU_MIPS_ABI_FP_ANY = 0,
