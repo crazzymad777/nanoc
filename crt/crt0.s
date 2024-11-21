@@ -15,7 +15,7 @@ _start:
 	call _init
 
 	pop RDI
-	pop RDI
+	pop RSI
 	call __nanoc_main
 
 	mov EDI, EAX
