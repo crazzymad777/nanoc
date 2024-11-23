@@ -75,7 +75,7 @@ extern(C) int strcmp(const char *s1, const char *s2)
 }
 
 /// Compares two memory area
-extern(C) int memcmp(const void[] s1, const void[] s2, size_t n)
+extern(C) int _memcmp(const void[] s1, const void[] s2, size_t n)
 {
     byte[] buf1 = cast(byte[]) s1;
     byte[] buf2 = cast(byte[]) s2;
