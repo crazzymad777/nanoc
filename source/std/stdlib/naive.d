@@ -8,7 +8,7 @@ void* _malloc(size_t size)
     if (memory)
     {
         memory[0] = size+8;
-        return cast(void*) (memory+8);
+        return cast(void*) (memory+1);
     }
     return null;
 }
@@ -17,7 +17,7 @@ void* _malloc(size_t size)
 void _free(void *ptr)
 {
     import nanoc.sys.mman: munmap;
-    long* memory = cast(long*) (ptr-8);
+    long* memory = cast(long*) (ptr-1);
     size_t size = memory[0];
     munmap(cast(void*) memory, size);
 }
@@ -34,3 +34,6 @@ void* _realloc(void *ptr, size_t size)
     }
     return q;
 }
+
+alias malloc = _malloc;
+alias free = _free;
