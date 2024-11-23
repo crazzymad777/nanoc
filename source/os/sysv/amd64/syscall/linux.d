@@ -17,4 +17,7 @@ enum SYS_fsync = 74;
 enum SYS_mkdir = 83;
 enum SYS_rmdir = 84;
 enum SYS_unlink = 87;
+
+/// arch_prctl: First argument: Subfunction int op, Second argument: unsigned long addr for set subfunctions, unsigned long* addr for get subfuctions
+enum SYS_arch_prctl = 158;
 enum SYS_waitid = 247;
