@@ -11,7 +11,7 @@ extern(C)
         for (i = 0; envp[i] !is null; i++) { }
         ulong* auxv = cast(ulong*)(envp) + i + 1;
 
-        for (i = 0; auxv[i]; i += 2)
+        for (i = 0; auxv[i] != 0; i += 2)
         {
             if (auxv[i] < NANOC_AT_MAX)
             {
@@ -19,8 +19,8 @@ extern(C)
             }
         }
 
-        import nanoc.thread: tls_init;
-        tls_init(_aux);
+        import nanoc.thread: init_thread_local_storage;
+        // init_thread_local_storage(_aux);
     }
 
     int main(int argc, char** argv, char** envp);
