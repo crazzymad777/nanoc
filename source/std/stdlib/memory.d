@@ -170,7 +170,7 @@ MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
 }
 
 /// Dynamic memory allocation
-extern (C) void* malloc(size_t size)
+extern (C) void* _malloc(size_t size)
 {
     if (beginSuperBlock is null)
     {
@@ -220,7 +220,7 @@ size_t unclaim_memory_block(MemoryBlock* entry_block, MemoryBlock* block)
 
 
 /// Free dynamic memory
-extern (C) void free(void *ptr)
+extern (C) void _free(void *ptr)
 {
     alias SUPERBLOCK = MemoryBlock.SUPERBLOCK;
     alias PRIMARY = MemoryBlock.PRIMARY;
@@ -252,5 +252,5 @@ extern (C) void free(void *ptr)
     }
 }
 
-alias _malloc = malloc;
-alias _free = free;
+// alias _malloc = malloc;
+// alias _free = free;

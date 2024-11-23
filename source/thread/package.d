@@ -39,14 +39,15 @@ struct StaticThreadLocalStorage
 
 __gshared StaticThreadLocalStorage static_tls;
 
-extern(C) void* __tls_get_addr(ThreadLocalStorageIndex vector)
-{
-    Thread* self = thread_self();
-
-    // return self.dtv[vector[0]] + cast(byte*)self.dtv[vector[1]];
-    byte* pointer = cast(byte*) self.dtv[vector.module_] + vector.offset;
-    return cast(void*) pointer;
-}
+// import core.attribute: weak;
+// @weak extern(C) void* __tls_get_addr(ThreadLocalStorageIndex vector)
+// {
+//     Thread* self = thread_self();
+//
+//     // return self.dtv[vector[0]] + cast(byte*)self.dtv[vector[1]];
+//     byte* pointer = cast(byte*) self.dtv[vector.module_] + vector.offset;
+//     return cast(void*) pointer;
+// }
 
 void init_thread_local_storage(ulong[NANOC_AT_MAX] aux)
 {
