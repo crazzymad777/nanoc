@@ -132,3 +132,9 @@ int _syscall_wait_wrapper(idtype_t idtype, id_t id, void* infop, int options, vo
 {
     return cast(int) syscall(SYS_waitid, idtype, id, infop, options, usage);
 }
+
+
+extern(C) int mkdir(const char* pathname, mode_t mode)
+{
+    return cast(int) syscall(SYS_mkdir, pathname, mode);
+}
