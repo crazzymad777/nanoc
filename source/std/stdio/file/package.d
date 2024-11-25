@@ -33,6 +33,7 @@ struct FILE {
         // cookie
     }
     int error;
+    bool eof;
 };
 
 alias File = FILE;
@@ -152,4 +153,16 @@ extern (C) int ferror(FILE* stream)
 extern (C) void clearerr(FILE *stream)
 {
     stream.error = 0;
+    stream.eof = false;
+}
+
+extern (C) void rewind(FILE *stream)
+{
+    clearerr(stream);
+    fseek(stream, 0, SEEK_SET);
+}
+
+extern (C) int feof(FILE* stream)
+{
+    return stream.eof;
 }
