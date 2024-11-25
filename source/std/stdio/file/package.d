@@ -40,7 +40,7 @@ extern (C) int fclose(FILE* f)
 
     static foreach (x; EnumMembers!(File.Type))
     {
-        if (e == x)
+        if (f.type == x)
         {
             return FileInterface!(Alias!x)._fclose(f);
         }
