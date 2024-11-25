@@ -1,5 +1,7 @@
 module nanoc.os;
 
+// NanoC runtime -> NanoC Portability layer -> Kernel interface
+
 version (X86_64)
 {
     version (linux)
@@ -27,3 +29,5 @@ struct Buffer
 /// Terminate a process with given Status
 //noreturn exit(int status);
 
+package(nanoc.os):
+__gshared int sys_errno;

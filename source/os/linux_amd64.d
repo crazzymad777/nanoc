@@ -3,6 +3,9 @@ module nanoc.os.linux_amd64;
 import nanoc.os.sysv.amd64.syscall;
 import nanoc.os.sysv.amd64.linux;
 
+import nanoc.std.errno: errno;
+import nanoc.os: sys_errno;
+
 noreturn exit(int status)
 {
     import nanoc.utils.noreturn: never_be_reached;
@@ -30,6 +33,7 @@ extern(C) int puts(const char *str)
     {
         return 0;
     }
+    errno = sys_errno;
     return EOF;
 }
 
@@ -40,6 +44,7 @@ extern(C) int putchar(int octet)
     {
         return cast(int) x;
     }
+    errno = sys_errno;
     return EOF;
 }
 
@@ -51,60 +56,111 @@ extern(C) int getchar()
     {
         return x;
     }
+    errno = sys_errno;
     return EOF;
 }
 
 /// open and possibly create a file
 extern(C) int open(const char *pathname, int flags, mode_t mode)
 {
-    return cast(int) syscall(SYS_open, cast(void*) pathname, flags, mode);
+    int ret = cast(int) syscall(SYS_open, cast(void*) pathname, flags, mode);
+    if (ret < 0)
+    {
+        errno = sys_errno;
+    }
+    return ret;
 }
 
 extern(C) size_t write(int fd, const void* buf, size_t count)
 {
-    return syscall(SYS_write, fd, buf, count);
+    size_t s = syscall(SYS_write, fd, buf, count);
+    if (s == -1)
+    {
+        errno = sys_errno;
+    }
+    return s;
 }
 
 extern(C) size_t read(int fd, void* buf, size_t count)
 {
-    return syscall(SYS_read, fd, buf, count);
+    size_t s = syscall(SYS_read, fd, buf, count);
+    if (s == -1)
+    {
+        errno = sys_errno;
+    }
+    return s;
 }
 
 /// close a file descriptor
 extern(C) int close(int fd)
 {
-    return cast(int) syscall(SYS_close, fd);
+    long s = syscall(SYS_close, fd);
+    if (s < 0)
+    {
+        errno = sys_errno;
+    }
+    return cast(int) s;
 }
 
 extern(C) int fcntl(T...)(int fd, int op, T args)
 {
-    return cast(int) syscall(SYS_fcntl, fd, op, args);
+    long s = syscall(SYS_fcntl, fd, op, args);
+    if (s < 0)
+    {
+        errno = sys_errno;
+    }
+    return cast(int) s;
 }
 
 extern(C) int fsync(int fd)
 {
-    return cast(int) syscall(SYS_fsync, fd);
+    long s = syscall(SYS_fsync, fd);
+    if (s < 0)
+    {
+        errno = sys_errno;
+    }
+    return cast(int) s;
 }
 
 /// Fork process
 int fork()
 {
-    return cast(int) syscall(SYS_fork);
+    long pid = syscall(SYS_fork);
+    if (pid < 0)
+    {
+         errno = sys_errno;
+    }
+    return cast(int) pid;
 }
 
 extern (C) int rmdir(const char* pathname)
 {
-    return cast(int) syscall(SYS_rmdir, pathname);
+    long s = syscall(SYS_rmdir, pathname);
+    if (s < 0)
+    {
+        errno = sys_errno;
+    }
+    return cast(int) s;
 }
 
 extern (C) int unlink(const char* pathname)
 {
-    return cast(int) syscall(SYS_unlink, pathname);
+    long s = syscall(SYS_unlink, pathname);
+    if (s < 0)
+    {
+        errno = sys_errno;
+    }
+    return cast(int) s;
 }
 
 long lseek(int fd, long offset, int whence)
 {
-    return syscall(SYS_lseek, fd, offset, whence);
+    long s = syscall(SYS_lseek, fd, offset, whence);
+    if (s == -1)
+    {
+        errno = sys_errno;
+    }
+    return cast(int) s;
 }
 
 
@@ -130,13 +186,23 @@ int waitid(idtype_t idtype, id_t id, void* infop, int options)
 @("metaomit")
 int _syscall_wait_wrapper(idtype_t idtype, id_t id, void* infop, int options, void* usage)
 {
-    return cast(int) syscall(SYS_waitid, idtype, id, infop, options, usage);
+    long s = syscall(SYS_waitid, idtype, id, infop, options, usage);
+    if (s < 0)
+    {
+        errno = sys_errno;
+    }
+    return cast(int) s;
 }
 
 
 extern(C) int mkdir(const char* pathname, mode_t mode)
 {
-    return cast(int) syscall(SYS_mkdir, pathname, mode);
+    long s = syscall(SYS_mkdir, pathname, mode);
+    if (s < 0)
+    {
+        errno = sys_errno;
+    }
+    return cast(int) s;
 }
 
 alias off_t = long;
@@ -148,17 +214,30 @@ enum MAP_ANONYMOUS = 0x0020;
 
 extern (C) void* mmap(void* addr, size_t length, int prot, int flags, int fd, off_t offset)
 {
-    return cast(void*) syscall(SYS_mmap, addr, length, prot, flags, fd, offset);
+    void* ptr = cast(void*) syscall(SYS_mmap, addr, length, prot, flags, fd, offset);
+    if (ptr is null)
+    {
+        errno = sys_errno;
+    }
+    return ptr;
 }
 
 extern (C) int munmap(void* addr, size_t length)
 {
-    return cast(int) syscall(SYS_munmap, addr, length);
+    long s = syscall(SYS_munmap, addr, length);
+    if (s < 0)
+    {
+        errno = sys_errno;
+    }
+    return cast(int) s;
 }
-
 
 extern(C) int set_thread_area(void *pointer)
 {
-    return cast(int) syscall(SYS_arch_prctl, 0x1002, pointer);
+    long s = syscall(SYS_arch_prctl, 0x1002, pointer);
+    if (s < 0)
+    {
+        errno = sys_errno;
+    }
+    return cast(int) s;
 }
-
