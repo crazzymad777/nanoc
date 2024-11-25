@@ -2,8 +2,8 @@ module nanoc.std.stdio.file.raw_fd;
 
 import nanoc.std.stdio.file;
 
-int _fclose(File.Type type)(File* f)
-    if (type == File.Type.OS)
+int _fclose(alias x)(File* f)
+    if (x == File.Type.OS)
 {
     import nanoc.std.stdlib: _free;
     import nanoc.std.stdio.common;

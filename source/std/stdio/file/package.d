@@ -8,8 +8,8 @@ struct FILE {
     enum Type {
         OS,
         MEMORY_STREAM,
-        DYNAMIC_MEMORY_STREAM,
-        COOKIE
+        // DYNAMIC_MEMORY_STREAM,
+        // COOKIE
     }
     struct Mem {
         void[] data;
@@ -50,16 +50,26 @@ extern(C) FILE* fmemopen(void[] buf, size_t size, const char* mode)
 extern (C) int fclose(FILE* f)
 {
     import std.traits;
-    if (f.type == File.Type.OS)
+    import std.meta;
+    // auto e = f.type;
+    // static foreach (x; __traits(allMembers, File.Type))
+    // {
+    //     if (e == __traits(getMember, File.Type, x))
+    //     {
+    //         alias X = __traits(getMember, File.Type, x);
+    //         return _fclose(X)(f);
+    //     }
+    // }
+    static foreach (x; EnumMembers!(File.Type))
     {
-        return _fclose!(File.Type.OS)(f);
-    }
-    else if (f.type == File.Type.MEMORY_STREAM)
-    {
-        return _fclose!(File.Type.MEMORY_STREAM)(f);
+        if (f.type == x)
+        {
+            //alias X = __traits(getMember, File.Type, x);
+            return _fclose!(Alias!x)(f);
+            //return _fclose(x)(f);
+        }
     }
     return EOF;
-    //return _fclose!(f.type)(f);
 }
 
 extern (C) int fputc(int c, FILE* stream)

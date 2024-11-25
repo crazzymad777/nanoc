@@ -2,8 +2,8 @@ module nanoc.std.stdio.file.memory;
 
 import nanoc.std.stdio.file;
 
-int _fclose(File.Type type)(File* f)
-    if (type == File.Type.MEMORY_STREAM)
+int _fclose(alias x)(File* f)
+    if (x == File.Type.MEMORY_STREAM)
 {
     import nanoc.std.stdlib: _free;
     _free(f);
