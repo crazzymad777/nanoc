@@ -214,18 +214,7 @@ enum MAP_SHARED = 0x0001;
 enum MAP_PRIVATE = 0x0002;
 enum MAP_ANONYMOUS = 0x0020;
 
-void* allocate_memory_chunk(size_t length)
-{
-    return mmap(null, length, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-}
-
-import nanoc.os: MemoryChunk;
-int deallocate_memory_chunk(MemoryChunk chunk)
-{
-    return munmap(cast(void*)chunk.data, chunk.len);
-}
-
-void* mmap(void* addr, size_t length, int prot, int flags, int fd, off_t offset)
+extern (C) void* mmap(void* addr, size_t length, int prot, int flags, int fd, off_t offset)
 {
     void* ptr = cast(void*) syscall(SYS_mmap, addr, length, prot, flags, fd, offset);
     if (ptr is null)
@@ -235,7 +224,7 @@ void* mmap(void* addr, size_t length, int prot, int flags, int fd, off_t offset)
     return ptr;
 }
 
-int munmap(void* addr, size_t length)
+extern (C) int munmap(void* addr, size_t length)
 {
     long s = syscall(SYS_munmap, addr, length);
     if (s < 0)

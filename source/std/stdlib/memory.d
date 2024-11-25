@@ -56,15 +56,14 @@ extern(C)
 @("metaomit")
 MemoryBlock* _allocate_primary_memory_block(size_t size)
 {
-    import nanoc.os: allocate_memory_chunk;
+    import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
     // raw memory block
     if (size < MemoryBlock.sizeof)
     {
         return null;
     }
 
-    MemoryBlock* raw_block = cast(MemoryBlock*) allocate_memory_chunk(size);
-
+    MemoryBlock* raw_block = cast(MemoryBlock*) mmap(null, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (raw_block)
     {
         raw_block.flags = MemoryBlock.CLAIMED | MemoryBlock.PRIMARY;
@@ -79,6 +78,7 @@ extern(C)
 @("metaomit")
 SuperMemoryBlock* _init_super_block(size_t size)
 {
+    import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
     if (size < MemoryBlock.sizeof * 4)
     {
         return null;
@@ -224,7 +224,7 @@ extern (C) void free(void *ptr)
 {
     alias SUPERBLOCK = MemoryBlock.SUPERBLOCK;
     alias PRIMARY = MemoryBlock.PRIMARY;
-
+    import nanoc.sys.mman: munmap;
     auto freed_block = cast(MemoryBlock*) (ptr - 1);
 
     if (freed_block.flags & PRIMARY)
@@ -238,11 +238,9 @@ extern (C) void free(void *ptr)
         }
         else
         {
-            import nanoc.os: deallocate_memory_chunk;
-            import nanoc.os: MemoryChunk;
             // called free on PRIMARY memory block
             size_t size = freed_block.size;
-            deallocate_memory_chunk(MemoryChunk(cast(char*) freed_block, size));
+            munmap(cast(void*) freed_block, size);
         }
     }
     else
