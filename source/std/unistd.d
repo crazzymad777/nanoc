@@ -47,3 +47,10 @@ extern (C) int unlink(const char* pathname)
     import nanoc.os: syscall, SYS_unlink;
     return cast(int) syscall(SYS_unlink, pathname);
 }
+
+long lseek(int fd, long offset, int whence)
+{
+    import nanoc.os: syscall, SYS_lseek;
+    return syscall(SYS_lseek, fd, offset, whence);
+}
+

@@ -41,6 +41,12 @@ template FileInterface(alias A)
         }
         return EOF;
     }
+
+    int _fseek(FILE *stream, long offset, int whence)
+    {
+        import nanoc.std.unistd: lseek;
+        return cast(int) lseek(stream.raw_fd, offset, whence);
+    }
 }
 
 extern (C) FILE* fopen(const char* filename, const char* mode)

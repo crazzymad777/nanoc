@@ -27,6 +27,23 @@ template FileInterface(alias A)
         }
         return EOF;
     }
+
+    int _fseek(FILE *stream, long offset, int whence)
+    {
+        if (whence == SEEK_CUR)
+        {
+            stream.memory.offset += offset;
+        }
+        else if (whence == SEEK_END)
+        {
+            stream.memory.offset = stream.memory.size + offset;
+        }
+        else if (whence == SEEK_SET)
+        {
+            stream.memory.offset = offset;
+        }
+        return cast(int) stream.memory.offset;
+    }
 }
 
 extern(C) FILE* fmemopen(void[] buf, size_t size, const char* mode)

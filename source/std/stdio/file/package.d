@@ -95,3 +95,28 @@ extern(C) int remove(const char* pathname)
     import nanoc.std.unistd: unlink;
     return unlink(pathname);
 }
+
+extern(C) long ftell(FILE* stream)
+{
+    return fseek(stream, 0, SEEK_CUR);
+}
+
+enum SEEK_CUR = 1;
+enum SEEK_END = 2;
+enum SEEK_SET = 0;
+
+extern(C) int fseek(FILE *stream, long offset, int whence)
+{
+    import std.traits;
+    import std.meta;
+    // need to check std handlers
+    static foreach (x; EnumMembers!(File.Type))
+    {
+        if (stream.type == x)
+        {
+            return FileInterface!(Alias!x)._fseek(stream, offset, whence);
+        }
+    }
+    return EOF;
+}
+
