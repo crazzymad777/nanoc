@@ -1,5 +1,7 @@
 module nanoc.std.stdio.file;
 
+import nanoc.std.stdio.file.raw_fd;
+import nanoc.std.stdio.file.memory;
 import nanoc.std.stdio.common;
 
 struct FILE {
@@ -27,6 +29,8 @@ struct FILE {
     }
 };
 
+alias File = FILE;
+
 extern(C) FILE* fmemopen(void[] buf, size_t size, const char* mode)
 {
     import nanoc.std.stdlib: _malloc, _free;
@@ -45,23 +49,17 @@ extern(C) FILE* fmemopen(void[] buf, size_t size, const char* mode)
 
 extern (C) int fclose(FILE* f)
 {
-    import nanoc.std.stdlib: _free;
-    if (f.type == FILE.Type.MEMORY_STREAM)
+    import std.traits;
+    if (f.type == File.Type.OS)
     {
-        _free(f);
-        return 0;
+        return _fclose!(File.Type.OS)(f);
     }
-    else if (f.type == FILE.Type.OS)
+    else if (f.type == File.Type.MEMORY_STREAM)
     {
-        int r = close(f.raw_fd);
-        if (r < 0)
-        {
-            return EOF;
-        }
-        _free(f);
-        return 0;
+        return _fclose!(File.Type.MEMORY_STREAM)(f);
     }
     return EOF;
+    //return _fclose!(f.type)(f);
 }
 
 extern (C) int fputc(int c, FILE* stream)
