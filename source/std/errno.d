@@ -39,7 +39,5 @@ enum EPIPE = 32; /* Broken pipe */
 enum EDOM = 33; /* Math argument out of domain of func */
 enum ERANGE = 34; /* Math result not representable */
 
-enum NANOC_ENOSYS = 38; /* Function not implemented */
-
 /// C error number
 extern(C) __gshared int errno;

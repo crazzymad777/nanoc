@@ -133,8 +133,6 @@ int fork()
     return cast(int) pid;
 }
 
-version = NANOC_FORK_IMPLEMENTED;
-
 extern (C) int rmdir(const char* pathname)
 {
     long s = syscall(SYS_rmdir, pathname);
@@ -233,9 +231,6 @@ extern (C) int munmap(void* addr, size_t length)
     }
     return cast(int) s;
 }
-
-version = NANOC_MMAP_IMPLEMENTED;
-version = NANOC_MUNMAP_IMPLEMENTED;
 
 extern(C) int set_thread_area(void *pointer)
 {
