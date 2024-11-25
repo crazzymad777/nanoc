@@ -28,3 +28,19 @@ template FileInterface(alias A)
         return EOF;
     }
 }
+
+extern(C) FILE* fmemopen(void[] buf, size_t size, const char* mode)
+{
+    import nanoc.std.stdlib: _malloc, _free;
+    FILE* f = cast(FILE*) _malloc(FILE.sizeof);
+    if (f)
+    {
+        f.type = FILE.Type.MEMORY_STREAM;
+        f.memory.data = buf;
+        f.memory.size = size;
+        f.memory.mode = O_RDWR;
+        f.memory.offset = 0;
+        return f;
+    }
+    return null;
+}
