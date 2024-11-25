@@ -1,5 +1,6 @@
 module nanoc.std.stdio.file.memory;
 
+import nanoc.std.stdio.common;
 import nanoc.std.stdio.file;
 
 template FileInterface(alias A)
@@ -14,7 +15,6 @@ template FileInterface(alias A)
 
     int _fputc(int c, FILE* stream)
     {
-        import nanoc.std.stdio.common;
         FILE.Mem* memory = &stream.memory;
         long offset = memory.offset;
         char x = cast(char) c;

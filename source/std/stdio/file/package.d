@@ -77,6 +77,13 @@ extern (C) int fputc(int c, FILE* stream)
 
 extern (C) int fputs(const char* s, FILE* stream)
 {
+    if (stream.type == File.Type.OS)
+    {
+        import std.meta;
+        return FileInterface!(Alias!File.Type.OS)._fputs(s, stream);
+    }
+
+    // Generic implementation
     int i = 0;
     while (s[i] != '\0')
     {
