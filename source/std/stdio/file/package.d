@@ -87,6 +87,16 @@ extern (C) int fputs(const char* s, FILE* stream)
 
 extern (C) int fgetc(FILE *stream)
 {
+    import std.traits;
+    import std.meta;
+    // need to check std handlers
+    static foreach (x; EnumMembers!(File.Type))
+    {
+        if (stream.type == x)
+        {
+            return FileInterface!(Alias!x)._fgetc(stream);
+        }
+    }
     return EOF;
 }
 

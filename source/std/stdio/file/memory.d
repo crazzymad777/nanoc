@@ -28,6 +28,18 @@ template FileInterface(alias A)
         return EOF;
     }
 
+    int _fgetc(FILE* stream)
+    {
+        FILE.Mem* memory = &stream.memory;
+        long offset = memory.offset;
+        if (offset < memory.size)
+        {
+            char[] buf = cast(char[]) memory.data;
+            return cast(int) buf[offset];
+        }
+        return EOF;
+    }
+
     int _fseek(FILE *stream, long offset, int whence)
     {
         if (whence == SEEK_CUR)

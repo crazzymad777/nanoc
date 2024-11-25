@@ -18,6 +18,17 @@ template FileInterface(alias A)
         return 0;
     }
 
+    int _fgetc(FILE* stream)
+    {
+        import nanoc.os: syscall, SYS_read;
+        char x;;
+        if (syscall(SYS_read, stream.raw_fd, &x, 1) >= 0)
+        {
+            return cast(int) x;
+        }
+        return EOF;
+    }
+
     int _fputc(int c, FILE* stream)
     {
         import nanoc.os: syscall, SYS_write;
