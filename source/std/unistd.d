@@ -3,8 +3,8 @@ module nanoc.std.unistd;
 /// Create child process
 extern (C) int fork()
 {
-    import nanoc.os: syscall, SYS_fork;
-    return cast(int) syscall(SYS_fork);
+    static import nanoc.os;
+    return fork();
 }
 
 unittest {
@@ -36,21 +36,4 @@ unittest {
     }
 }
 
-extern (C) int rmdir(const char* pathname)
-{
-    import nanoc.os: syscall, SYS_rmdir;
-    return cast(int) syscall(SYS_rmdir, pathname);
-}
-
-extern (C) int unlink(const char* pathname)
-{
-    import nanoc.os: syscall, SYS_unlink;
-    return cast(int) syscall(SYS_unlink, pathname);
-}
-
-long lseek(int fd, long offset, int whence)
-{
-    import nanoc.os: syscall, SYS_lseek;
-    return syscall(SYS_lseek, fd, offset, whence);
-}
-
+public import nanoc.os;
