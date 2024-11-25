@@ -32,6 +32,7 @@ struct FILE {
         // memory stream / dynamic memory buffer
         // cookie
     }
+    int error;
 };
 
 alias File = FILE;
@@ -143,3 +144,12 @@ extern(C) int fseek(FILE *stream, long offset, int whence)
     return -1;
 }
 
+extern (C) int ferror(FILE* stream)
+{
+    return stream.error;
+}
+
+extern (C) void clearerr(FILE *stream)
+{
+    stream.error = 0;
+}
