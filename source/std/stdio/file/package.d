@@ -87,3 +87,9 @@ extern (C) int fgetc(FILE *stream)
 {
     return EOF;
 }
+
+extern(C) int remove(const char* pathname)
+{
+    import nanoc.std.unistd: unlink;
+    return unlink(pathname);
+}
