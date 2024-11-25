@@ -18,8 +18,7 @@ enum StreamModificator
     TRANSLATE
 }
 
-private
-static StreamModificator sm = StreamModificator.NONE;
+private __gshared StreamModificator sm = StreamModificator.NONE;
 
 /// Print character
 private void profit(char x)

@@ -23,7 +23,7 @@ extern (C)
         never_be_reached(); // supress D warning
     }
 
-    void* _calloc(size_t nmemb, size_t size)
+    void* calloc(size_t nmemb, size_t size)
     {
         import nanoc.std.string: memset;
         void* ptr = _malloc(nmemb*size);

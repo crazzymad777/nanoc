@@ -23,7 +23,8 @@ void _free(void *ptr)
 }
 
 // naive realloc
-void* _realloc(void *ptr, size_t size)
+extern(C)
+void* realloc(void *ptr, size_t size)
 {
     import nanoc.std.string: memcpy;
     void* q = _malloc(size);

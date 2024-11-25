@@ -5,7 +5,7 @@ authors "Yuriy Moskoff"
 copyright "Copyright © 2024, Yuriy Moskoff"
 license "LGPL-3.0-or-later"
 buildOptions "debugInfoC" "betterC"
-dflags "-s" "-nolibc" "-nodefaultlibs" "-fno-stack-protector" platform="gdc"
+dflags "-s" "-nolibc" "-nodefaultlibs" "-fno-stack-protector" "-ftransition=tls" platform="gdc"
 # lflags "-L/lib64" "-l:ld-linux-x86-64.so.2" # ld-linux depends on glibc
 preBuildCommands "as source/raw_syscall.s -o obj/raw_syscall.o -c"
 sourceFiles "obj/raw_syscall.o"

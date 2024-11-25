@@ -18,9 +18,6 @@ extern(C)
                 _aux[auxv[i]] = auxv[i+1];
             }
         }
-
-        import nanoc.thread: init_thread_local_storage;
-        // init_thread_local_storage(_aux);
     }
 
     int main(int argc, char** argv, char** envp);

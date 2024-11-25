@@ -1,6 +1,6 @@
 module nanoc.std.stdlib.memory;
 
-public import nanoc.std.stdlib.naive: _realloc;
+public import nanoc.std.stdlib.naive: realloc;
 
 // Super memory block must have field, head & tail
 // Super memory block contains other memory blocks
@@ -49,7 +49,7 @@ struct MemoryBlock
 	byte[0] data;
 }
 
-__gshared SuperMemoryBlock* beginSuperBlock;
+__gshared SuperMemoryBlock* beginSuperBlock = null;
 
 extern(C)
 @("mmap_wrapper")
@@ -170,7 +170,7 @@ MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
 }
 
 /// Dynamic memory allocation
-extern (C) void* _malloc(size_t size)
+extern (C) void* malloc(size_t size)
 {
     if (beginSuperBlock is null)
     {
@@ -220,7 +220,7 @@ size_t unclaim_memory_block(MemoryBlock* entry_block, MemoryBlock* block)
 
 
 /// Free dynamic memory
-extern (C) void _free(void *ptr)
+extern (C) void free(void *ptr)
 {
     alias SUPERBLOCK = MemoryBlock.SUPERBLOCK;
     alias PRIMARY = MemoryBlock.PRIMARY;
@@ -252,5 +252,5 @@ extern (C) void _free(void *ptr)
     }
 }
 
-// alias _malloc = malloc;
-// alias _free = free;
+alias _malloc = malloc;
+alias _free = free;

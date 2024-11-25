@@ -4,4 +4,4 @@ module nanoc.std.errno;
 enum EINVAL = 22;
 
 /// C error number
-extern(C) static int errno;
+extern(C) __gshared int errno;

@@ -1,5 +1,7 @@
 .file "raw_syscall.s"
 .intel_syntax noprefix
+
+.text
 .globl raw_syscall
 .type raw_syscall, @function
 
