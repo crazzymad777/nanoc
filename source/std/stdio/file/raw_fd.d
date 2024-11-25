@@ -21,7 +21,7 @@ template FileInterface(alias A)
     int _fgetc(FILE* stream)
     {
         import nanoc.os;
-        char x;;
+        char x;
         long ret = read(stream.raw_fd, &x, 1);
         if (ret > 0)
         {
