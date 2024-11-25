@@ -44,9 +44,14 @@ template FileInterface(alias A)
         import nanoc.os: syscall, SYS_write;
         char x = cast(char) c;
         long ret = syscall(SYS_write, stream.raw_fd, &x, 1);
-        if (ret >= 0)
+        if (ret > 0)
         {
             return cast(int) x;
+        }
+
+        if (ret == 0)
+        {
+            return EOF;
         }
 
         if (ret < 0)

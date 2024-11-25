@@ -29,6 +29,7 @@ template FileInterface(alias A)
             memory.offset++;
             return x;
         }
+        stream.eof = true;
         return EOF;
     }
 
@@ -42,6 +43,7 @@ template FileInterface(alias A)
             memory.offset += 1;
             return cast(int) buf[offset];
         }
+        stream.eof = true;
         return EOF;
     }
 
@@ -63,6 +65,7 @@ template FileInterface(alias A)
         if (stream.memory.offset < 0 ||  stream.memory.offset >= stream.memory.size)
         {
             // because memory.size is CONST for given memory area
+            stream.eof = true;
             return -1;
         }
         return 0;
@@ -72,6 +75,7 @@ template FileInterface(alias A)
     {
         if (stream.memory.offset < 0 ||  stream.memory.offset >= stream.memory.size)
         {
+            stream.eof = true;
             return -1;
         }
         return stream.memory.offset;
@@ -123,7 +127,6 @@ unittest
     fclose(f);
 }
 
-
 unittest
 {
     char[10] buffer;
@@ -137,5 +140,16 @@ unittest
 {
     auto f = fmemopen(null, 10, "r+".ptr);
     assert(f !is null);
+    fclose(f);
+}
+
+unittest
+{
+    char[1] buffer;
+    auto f = fmemopen(cast(void*)&buffer, 1, "r+".ptr);
+    assert(fputc('a', f) == 'a');
+    assert(feof(f) == 0);
+    assert(fputc('a', f) == EOF);
+    assert(feof(f) == 1);
     fclose(f);
 }
