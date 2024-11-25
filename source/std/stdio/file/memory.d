@@ -35,6 +35,7 @@ template FileInterface(alias A)
         if (offset < memory.size)
         {
             char[] buf = cast(char[]) memory.data;
+            memory.offset += 1;
             return cast(int) buf[offset];
         }
         return EOF;
@@ -72,4 +73,18 @@ extern(C) FILE* fmemopen(void[] buf, size_t size, const char* mode)
         return f;
     }
     return null;
+}
+
+unittest
+{
+    char[10] buffer;
+    auto f = fmemopen(cast(void[]) buffer, 10, "rw".ptr);
+    fputc('a', f);
+    fputc('b', f);
+    fputc('c', f);
+    fseek(f, 0, SEEK_SET);
+    assert(fgetc(f) == 'a');
+    assert(fgetc(f) == 'b');
+    assert(fgetc(f) == 'c');
+    fclose(f);
 }
