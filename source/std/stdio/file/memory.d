@@ -65,7 +65,16 @@ template FileInterface(alias A)
             // because memory.size is CONST for given memory area
             return -1;
         }
-        return cast(int) stream.memory.offset;
+        return 0;
+    }
+
+    long _ftell(FILE* stream)
+    {
+        if (stream.memory.offset < 0 ||  stream.memory.offset >= stream.memory.size)
+        {
+            return -1;
+        }
+        return stream.memory.offset;
     }
 }
 
@@ -79,7 +88,7 @@ extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
         if (buf is null)
         {
             auto x = _malloc(size);
-            if (buf is null)
+            if (x is null)
             {
                 _free(f);
                 return null;
@@ -102,11 +111,12 @@ extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
 unittest
 {
     char[10] buffer;
-    auto f = fmemopen(cast(void*)&buffer, 10, "rw".ptr);
-    fputc('a', f);
-    fputc('b', f);
-    fputc('c', f);
-    fseek(f, 0, SEEK_SET);
+    auto f = fmemopen(cast(void*)&buffer, 10, "r+".ptr);
+    assert(f !is null);
+    assert(fputc('a', f) == 'a');
+    assert(fputc('b', f) == 'b');
+    assert(fputc('c', f) == 'c');
+    assert(fseek(f, 0, SEEK_SET) == 0);
     assert(fgetc(f) == 'a');
     assert(fgetc(f) == 'b');
     assert(fgetc(f) == 'c');
@@ -117,8 +127,15 @@ unittest
 unittest
 {
     char[10] buffer;
-    auto f = fmemopen(cast(void*)&buffer, 10, "rw".ptr);
+    auto f = fmemopen(cast(void*)&buffer, 10, "r+".ptr);
     assert(fseek(f, 0, SEEK_END) == -1);
     assert(fputc('a', f) == EOF);
+    fclose(f);
+}
+
+unittest
+{
+    auto f = fmemopen(null, 10, "r+".ptr);
+    assert(f !is null);
     fclose(f);
 }

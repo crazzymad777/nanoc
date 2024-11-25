@@ -111,7 +111,17 @@ extern(C) int remove(const char* pathname)
 
 extern(C) long ftell(FILE* stream)
 {
-    return fseek(stream, 0, SEEK_CUR);
+    import std.traits;
+    import std.meta;
+    // need to check std handlers
+    static foreach (x; EnumMembers!(File.Type))
+    {
+        if (stream.type == x)
+        {
+            return FileInterface!(Alias!x)._ftell(stream);
+        }
+    }
+    return -1;
 }
 
 enum SEEK_CUR = 1;
@@ -130,6 +140,6 @@ extern(C) int fseek(FILE *stream, long offset, int whence)
             return FileInterface!(Alias!x)._fseek(stream, offset, whence);
         }
     }
-    return EOF;
+    return -1;
 }
 

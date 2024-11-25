@@ -56,7 +56,13 @@ template FileInterface(alias A)
     int _fseek(FILE *stream, long offset, int whence)
     {
         import nanoc.std.unistd: lseek;
-        return cast(int) lseek(stream.raw_fd, offset, whence);
+        return cast(int) (lseek(stream.raw_fd, offset, whence) != -1);
+    }
+
+    long _ftell(FILE *stream)
+    {
+        import nanoc.std.unistd: lseek;
+        return lseek(stream.raw_fd, 0, SEEK_CUR);
     }
 }
 
