@@ -20,9 +20,9 @@ template FileInterface(alias A)
 
     int _fgetc(FILE* stream)
     {
-        import nanoc.os: syscall, SYS_read;
+        import nanoc.os;
         char x;;
-        long ret = syscall(SYS_read, stream.raw_fd, &x, 1);
+        long ret = read(stream.raw_fd, &x, 1);
         if (ret > 0)
         {
             return cast(int) x;
@@ -41,9 +41,10 @@ template FileInterface(alias A)
 
     int _fputc(int c, FILE* stream)
     {
-        import nanoc.os: syscall, SYS_write;
+        import nanoc.os;
+
         char x = cast(char) c;
-        long ret = syscall(SYS_write, stream.raw_fd, &x, 1);
+        long ret = write(stream.raw_fd, &x, 1);
         if (ret > 0)
         {
             return cast(int) x;
@@ -67,10 +68,10 @@ template FileInterface(alias A)
 
     int _fputs(const char* s, FILE* stream)
     {
-        import nanoc.os: syscall, SYS_write;
         import nanoc.std.string: strlen;
+        import nanoc.os;
 
-        long r = syscall(SYS_write, stream.raw_fd, s, strlen(s));
+        long r = write(stream.raw_fd, s, strlen(s));
         if (r >= 0)
         {
             return cast(int) r;

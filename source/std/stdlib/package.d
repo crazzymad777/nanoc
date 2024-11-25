@@ -14,13 +14,11 @@ extern (C)
     /// Terminate a process
     noreturn exit(int status)
     {
+        static import nanoc.os;
         import nanoc.entry;
         __nanoc_fini();
 
-        import nanoc.utils.noreturn: never_be_reached;
-        import nanoc.os: syscall, SYS_exit;
-        syscall(SYS_exit, status);
-        never_be_reached(); // supress D warning
+        nanoc.os.exit(status);
     }
 
     void* calloc(size_t nmemb, size_t size)
