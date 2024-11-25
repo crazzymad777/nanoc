@@ -120,3 +120,12 @@ extern (C) FILE* fopen(const char* filename, const char* mode)
     }
     return null;
 }
+
+extern(C) int fileno(FILE* stream)
+{
+    if (stream.type == File.Type.OS)
+    {
+        return stream.raw_fd;
+    }
+    return -1;
+}
