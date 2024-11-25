@@ -70,19 +70,34 @@ template FileInterface(alias A)
         {
             return cast(int) r;
         }
+        // inherits error or EOF possibly
         return EOF;
     }
 
     int _fseek(FILE *stream, long offset, int whence)
     {
         import nanoc.std.unistd: lseek;
-        return cast(int) (lseek(stream.raw_fd, offset, whence) != -1);
+        long ret = lseek(stream.raw_fd, offset, whence);
+        if (ret == -1)
+        {
+            import nanoc.std.errno: errno;
+            stream.error = errno;
+            return -1;
+        }
+        return 0;
     }
 
     long _ftell(FILE *stream)
     {
         import nanoc.std.unistd: lseek;
-        return lseek(stream.raw_fd, 0, SEEK_CUR);
+        long ret = lseek(stream.raw_fd, 0, SEEK_CUR);
+        if (ret == -1)
+        {
+            import nanoc.std.errno: errno;
+            stream.error = errno;
+            return -1;
+        }
+        return ret;
     }
 }
 
