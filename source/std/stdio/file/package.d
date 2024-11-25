@@ -51,22 +51,11 @@ extern (C) int fclose(FILE* f)
 {
     import std.traits;
     import std.meta;
-    // auto e = f.type;
-    // static foreach (x; __traits(allMembers, File.Type))
-    // {
-    //     if (e == __traits(getMember, File.Type, x))
-    //     {
-    //         alias X = __traits(getMember, File.Type, x);
-    //         return _fclose(X)(f);
-    //     }
-    // }
     static foreach (x; EnumMembers!(File.Type))
     {
         if (f.type == x)
         {
-            //alias X = __traits(getMember, File.Type, x);
-            return _fclose!(Alias!x)(f);
-            //return _fclose(x)(f);
+            return FileInterface!(Alias!x)._fclose(f);
         }
     }
     return EOF;
@@ -74,29 +63,14 @@ extern (C) int fclose(FILE* f)
 
 extern (C) int fputc(int c, FILE* stream)
 {
-    if (stream.type == FILE.Type.MEMORY_STREAM)
+    import std.traits;
+    import std.meta;
+    static foreach (x; EnumMembers!(File.Type))
     {
-        FILE.Mem* memory = &stream.memory;
-        long offset = memory.offset;
-        char x = cast(char) c;
-        if (offset < memory.size)
+        if (stream.type == x)
         {
-            char[] buf = cast(char[]) memory.data;
-            buf[offset] = x;
-            memory.offset++;
-            return x;
+            return FileInterface!(Alias!x)._fputc(c, stream);
         }
-        return EOF;
-    }
-    else if (stream.type == FILE.Type.OS)
-    {
-        import nanoc.os: syscall, SYS_write;
-        char x = cast(char) c;
-        if (syscall(SYS_write, stream.raw_fd, &x, 1) >= 0)
-        {
-            return cast(int) x;
-        }
-        return EOF;
     }
     return EOF;
 }
