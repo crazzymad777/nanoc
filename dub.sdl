@@ -1,15 +1,12 @@
 name "nanoc"
-targetType "dynamicLibrary"
+version "0.0.1"
 description "Nano library C"
 authors "Yuriy Moskoff"
 copyright "Copyright © 2024, Yuriy Moskoff"
 license "LGPL-3.0-or-later"
-buildOptions "debugInfoC" "betterC"
-dflags "-s" "-nolibc" "-nodefaultlibs" "-fno-stack-protector" "-ftransition=tls" platform="gdc"
-# lflags "-L/lib64" "-l:ld-linux-x86-64.so.2" # ld-linux depends on glibc
-preBuildCommands "as source/raw_syscall.s -o obj/raw_syscall.o -c"
-sourceFiles "obj/raw_syscall.o"
-# debugVersions "DISABLE_METADATA"
-# versions "DISABLE_METADATA"
-
-# dflags "-ftransition=tls" for track TLS
+targetType "dynamicLibrary"
+dflags "-nolibc" "-nodefaultlibs" "-fno-stack-protector" "-ftransition=tls" "-nostartfiles" platform="gdc"
+sourceFiles "obj/raw_syscall.o" "obj/crt.o"
+preBuildCommands "as source/raw_syscall.s -o obj/raw_syscall.o -c" "as crt/*.s -o obj/crt.o"
+buildOptions "betterC"
+versions "DISABLE_METADATA"
