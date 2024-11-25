@@ -14,11 +14,14 @@ struct FILE {
         // COOKIE
     }
     struct Mem {
-        void[] data;
+        union {
+            void* data_ptr;
+        }
         size_t size;
         int mode;
 
         long offset;
+        bool nanoc;
     };
 
     Type type;

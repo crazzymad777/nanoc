@@ -9,6 +9,10 @@ template FileInterface(alias A)
     int _fclose(File* f)
     {
         import nanoc.std.stdlib: _free;
+        if (f.memory.nanoc)
+        {
+            _free(f.memory.data_ptr);
+        }
         _free(f);
         return 0;
     }
@@ -20,7 +24,7 @@ template FileInterface(alias A)
         char x = cast(char) c;
         if (offset < memory.size)
         {
-            char[] buf = cast(char[]) memory.data;
+            char* buf = cast(char*) memory.data_ptr;
             buf[offset] = x;
             memory.offset++;
             return x;
@@ -34,7 +38,7 @@ template FileInterface(alias A)
         long offset = memory.offset;
         if (offset < memory.size)
         {
-            char[] buf = cast(char[]) memory.data;
+            char* buf = cast(char*) memory.data_ptr;
             memory.offset += 1;
             return cast(int) buf[offset];
         }
@@ -55,18 +59,38 @@ template FileInterface(alias A)
         {
             stream.memory.offset = offset;
         }
+
+        if (stream.memory.offset < 0 ||  stream.memory.offset >= stream.memory.size)
+        {
+            // because memory.size is CONST for given memory area
+            return -1;
+        }
         return cast(int) stream.memory.offset;
     }
 }
 
-extern(C) FILE* fmemopen(void[] buf, size_t size, const char* mode)
+extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
 {
     import nanoc.std.stdlib: _malloc, _free;
     FILE* f = cast(FILE*) _malloc(FILE.sizeof);
     if (f)
     {
         f.type = FILE.Type.MEMORY_STREAM;
-        f.memory.data = buf;
+        if (buf is null)
+        {
+            auto x = _malloc(size);
+            if (buf is null)
+            {
+                _free(f);
+                return null;
+            }
+            f.memory.data_ptr = x;
+            f.memory.nanoc = true;
+        }
+        else
+        {
+            f.memory.data_ptr = buf;
+        }
         f.memory.size = size;
         f.memory.mode = O_RDWR;
         f.memory.offset = 0;
@@ -78,7 +102,7 @@ extern(C) FILE* fmemopen(void[] buf, size_t size, const char* mode)
 unittest
 {
     char[10] buffer;
-    auto f = fmemopen(cast(void[]) buffer, 10, "rw".ptr);
+    auto f = fmemopen(cast(void*)&buffer, 10, "rw".ptr);
     fputc('a', f);
     fputc('b', f);
     fputc('c', f);
@@ -93,8 +117,8 @@ unittest
 unittest
 {
     char[10] buffer;
-    auto f = fmemopen(cast(void[]) buffer, 10, "rw".ptr);
-    fseek(f, 0, SEEK_END);
+    auto f = fmemopen(cast(void*)&buffer, 10, "rw".ptr);
+    assert(fseek(f, 0, SEEK_END) == -1);
     assert(fputc('a', f) == EOF);
     fclose(f);
 }
