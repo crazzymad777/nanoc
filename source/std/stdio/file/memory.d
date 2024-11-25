@@ -88,3 +88,13 @@ unittest
     assert(fgetc(f) == 'c');
     fclose(f);
 }
+
+
+unittest
+{
+    char[10] buffer;
+    auto f = fmemopen(cast(void[]) buffer, 10, "rw".ptr);
+    fseek(f, 0, SEEK_END);
+    assert(fputc('a', f) == EOF);
+    fclose(f);
+}
