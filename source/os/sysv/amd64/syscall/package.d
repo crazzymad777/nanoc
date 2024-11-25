@@ -28,7 +28,7 @@ extern (System) long syscall(T...)(T args)
     auto return_code = raw_syscall(args);
     if (return_code.raw >= -4095 && return_code.raw < 0)
     {
-        errno = cast(int) return_code.result;
+        errno = cast(int) (-1 * return_code.result);
     }
     return return_code.result;
 }
