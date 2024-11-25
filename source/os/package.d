@@ -25,5 +25,5 @@ struct Buffer
 
 
 /// Terminate a process with given Status
-noreturn exit(int status);
+//noreturn exit(int status);
 

@@ -156,3 +156,9 @@ extern (C) int munmap(void* addr, size_t length)
     return cast(int) syscall(SYS_munmap, addr, length);
 }
 
+
+extern(C) int set_thread_area(void *pointer)
+{
+    return cast(int) syscall(SYS_arch_prctl, 0x1002, pointer);
+}
+

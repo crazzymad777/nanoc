@@ -4,7 +4,7 @@ module nanoc.std.unistd;
 extern (C) int fork()
 {
     static import nanoc.os;
-    return fork();
+    return nanoc.os.fork();
 }
 
 unittest {
