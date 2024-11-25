@@ -1,5 +1,7 @@
 module nanoc.os.sysv.amd64.linux;
 
+package(nanoc.os):
+
 /// System read(fd, buffer, buffer size)
 enum SYS_read = 0;
 

@@ -1,5 +1,7 @@
 module nanoc.os.sysv.amd64.syscall;
 
+package(nanoc.os):
+
 private
 struct SyscallResponse {
         long result;
