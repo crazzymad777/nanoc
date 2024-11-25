@@ -3,8 +3,8 @@ module nanoc.std.stdlib.naive;
 // naive malloc
 void* _malloc(size_t size)
 {
-    import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
-    long* memory = cast(long*) mmap(null, size+8, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    import nanoc.os: allocate_memory_chunk;
+    long* memory = cast(long*) allocate_memory_chunk(size + 8);
     if (memory)
     {
         memory[0] = size+8;
@@ -16,10 +16,11 @@ void* _malloc(size_t size)
 // naive free
 void _free(void *ptr)
 {
-    import nanoc.sys.mman: munmap;
+    import nanoc.os: deallocate_memory_chunk;
+    import nanoc.os: MemoryChunk;
     long* memory = cast(long*) (ptr-1);
     size_t size = memory[0];
-    munmap(cast(void*) memory, size);
+    deallocate_memory_chunk(MemoryChunk(cast(char*) memory, size));
 }
 
 // naive realloc
