@@ -37,9 +37,10 @@ extern (C) int fclose(FILE* f)
 {
     import std.traits;
     import std.meta;
+
     static foreach (x; EnumMembers!(File.Type))
     {
-        if (f.type == x)
+        if (e == x)
         {
             return FileInterface!(Alias!x)._fclose(f);
         }
@@ -51,6 +52,7 @@ extern (C) int fputc(int c, FILE* stream)
 {
     import std.traits;
     import std.meta;
+    // need to check std handlers
     static foreach (x; EnumMembers!(File.Type))
     {
         if (stream.type == x)
