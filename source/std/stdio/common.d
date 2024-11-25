@@ -53,16 +53,16 @@ extern(C) int open(const char *pathname, int flags, mode_t mode)
     return cast(int) syscall(SYS_open, cast(void*) pathname, flags, mode);
 }
 
-extern(C) size_t write(int fd, const void[] buf, size_t count)
+extern(C) size_t write(int fd, const void* buf, size_t count)
 {
     import nanoc.os: syscall, SYS_write;
-    return syscall(SYS_write, fd, cast(void*) buf, count);
+    return syscall(SYS_write, fd, buf, count);
 }
 
-extern(C) size_t read(int fd, void[] buf, size_t count)
+extern(C) size_t read(int fd, void* buf, size_t count)
 {
     import nanoc.os: syscall, SYS_read;
-    return syscall(SYS_read, fd, cast(void*) buf, count);
+    return syscall(SYS_read, fd, buf, count);
 }
 
 /// close a file descriptor
