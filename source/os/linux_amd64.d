@@ -39,40 +39,6 @@ noreturn pexit(int status)
     never_be_reached(); // supress D error
 }
 
-extern(C) int puts(const char *str)
-{
-    import nanoc.std.string: strlen;
-    if (syscall(SYS_write, 1, str, strlen(str)) >= 0)
-    {
-        return 0;
-    }
-    errno = sys_errno;
-    return EOF;
-}
-
-extern(C) int putchar(int octet)
-{
-    char x = cast(char) octet;
-    if (syscall(SYS_write, 1, &x, 1) >= 0)
-    {
-        return cast(int) x;
-    }
-    errno = sys_errno;
-    return EOF;
-}
-
-extern(C) int getchar()
-{
-    char x;
-    int ret = cast(int) syscall(SYS_read, 0, &x, 1);
-    if (ret >= 0)
-    {
-        return x;
-    }
-    errno = sys_errno;
-    return EOF;
-}
-
 import nanoc.os: StringBuffer;
 import nanoc.os: MemoryChunk;
 /// open and possibly create a file
@@ -109,6 +75,29 @@ size_t sread(int fd, MemoryChunk buffer)
         errno = sys_errno;
     }
     return s;
+}
+
+int sread_single(int fd)
+{
+    char x;
+    size_t s = syscall(SYS_read, fd, &x, 1);
+    if (s == -1)
+    {
+        errno = sys_errno;
+        return OS_EOF;
+    }
+    return x;
+}
+
+int swrite_single(int fd, char x)
+{
+    size_t s = syscall(SYS_write, fd, &x, 1);
+    if (s < 0)
+    {
+        errno = sys_errno;
+        return OS_EOF;
+    }
+    return x;
 }
 
 /// close stream
