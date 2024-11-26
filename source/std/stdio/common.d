@@ -39,7 +39,6 @@ extern (C) size_t read(int fd, char* buf, size_t count)
     return sread(fd, MemoryChunk(buf, count));
 }
 
-
 extern(C) int puts(const char *str)
 {
     import nanoc.os: StringBuffer;
@@ -61,7 +60,7 @@ extern(C) int putchar(int octet)
 extern(C) int getchar()
 {
     import nanoc.os: swrite_single;
-    int r = sread_single(OS_STDOUT_FILENO);
+    int r = sread_single(OS_STDIN_FILENO);
     if (r == OS_EOF)
     {
         return EOF;

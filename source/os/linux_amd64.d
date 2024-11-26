@@ -17,6 +17,7 @@ enum O_RDWR = 2;
 enum O_CREAT = 64;
 enum O_TRUNC = 512;
 enum O_APPEND = 1024;
+enum STDIN_FILENO = 0;
 enum STDOUT_FILENO = 1;
 enum F_DUPFD = 0;
 }
@@ -29,6 +30,7 @@ enum OS_CREATE = O_CREAT;
 enum OS_TRUNCATE = O_TRUNC;
 enum OS_APPEND = O_APPEND;
 enum OS_STDOUT_FILENO = STDOUT_FILENO;
+enum OS_STDIN_FILENO = STDIN_FILENO;
 enum OS_F_DUPFD = F_DUPFD;
 
 noreturn pexit(int status)
