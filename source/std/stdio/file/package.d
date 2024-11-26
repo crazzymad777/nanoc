@@ -38,8 +38,30 @@ struct FILE {
 
 alias File = FILE;
 
+__gshared File fstderr = {type: File.Type.OS, raw_fd: STDERR_FILENO};
+__gshared File fstdout = {type: File.Type.OS, raw_fd: STDOUT_FILENO};
+__gshared File fstdin = {type: File.Type.OS, raw_fd: STDIN_FILENO};
+
+File* checkStdHandler(File* f)
+{
+    if (f == cast(File*) STDERR_FILENO)
+    {
+        return &fstderr;
+    }
+    if (f == cast(File*) STDOUT_FILENO)
+    {
+        return &fstdout;
+    }
+    if (f == cast(File*) STDIN_FILENO)
+    {
+        return &fstdin;
+    }
+    return f;
+}
+
 extern (C) int fclose(FILE* f)
 {
+    f = checkStdHandler(f);
     import std.traits;
     import std.meta;
 
@@ -55,6 +77,7 @@ extern (C) int fclose(FILE* f)
 
 extern (C) int fputc(int c, FILE* stream)
 {
+    stream = checkStdHandler(stream);
     import std.traits;
     import std.meta;
     // need to check std handlers
@@ -70,6 +93,8 @@ extern (C) int fputc(int c, FILE* stream)
 
 extern (C) int fputs(const char* s, FILE* stream)
 {
+    stream = checkStdHandler(stream);
+
     if (stream.type == File.Type.OS)
     {
         import std.meta;
@@ -92,6 +117,7 @@ extern (C) int fputs(const char* s, FILE* stream)
 
 extern (C) int fgetc(FILE *stream)
 {
+    stream = checkStdHandler(stream);
     import std.traits;
     import std.meta;
     // need to check std handlers
@@ -113,6 +139,7 @@ extern(C) int remove(const char* pathname)
 
 extern(C) long ftell(FILE* stream)
 {
+    stream = checkStdHandler(stream);
     import std.traits;
     import std.meta;
     // need to check std handlers
@@ -132,6 +159,7 @@ enum SEEK_SET = 0;
 
 extern(C) int fseek(FILE *stream, long offset, int whence)
 {
+    stream = checkStdHandler(stream);
     import std.traits;
     import std.meta;
     // need to check std handlers
@@ -147,22 +175,27 @@ extern(C) int fseek(FILE *stream, long offset, int whence)
 
 extern (C) int ferror(FILE* stream)
 {
+    stream = checkStdHandler(stream);
     return stream.error;
 }
 
 extern (C) void clearerr(FILE *stream)
 {
+    stream = checkStdHandler(stream);
     stream.error = 0;
     stream.eof = false;
 }
 
 extern (C) void rewind(FILE *stream)
 {
+    stream = checkStdHandler(stream);
+    stream = checkStdHandler(stream);
     clearerr(stream);
     fseek(stream, 0, SEEK_SET);
 }
 
 extern (C) int feof(FILE* stream)
 {
+    stream = checkStdHandler(stream);
     return stream.eof;
 }

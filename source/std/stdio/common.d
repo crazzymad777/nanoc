@@ -10,7 +10,9 @@ enum O_APPEND = OS_APPEND;
 enum O_TRUNC = OS_TRUNCATE;
 enum O_RONLY = OS_READ_ONLY;
 
+enum STDIN_FILENO = OS_STDIN_FILENO;
 enum STDOUT_FILENO = OS_STDOUT_FILENO;
+enum STDERR_FILENO = OS_STDERR_FILENO;
 enum F_DUPFD = OS_F_DUPFD;
 
 extern (C) int open(const char *pathname, int flags, mode_t mode)

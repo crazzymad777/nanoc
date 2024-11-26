@@ -19,6 +19,7 @@ enum O_TRUNC = 512;
 enum O_APPEND = 1024;
 enum STDIN_FILENO = 0;
 enum STDOUT_FILENO = 1;
+enum STDERR_FILENO = 2;
 enum F_DUPFD = 0;
 }
 
@@ -31,6 +32,7 @@ enum OS_TRUNCATE = O_TRUNC;
 enum OS_APPEND = O_APPEND;
 enum OS_STDOUT_FILENO = STDOUT_FILENO;
 enum OS_STDIN_FILENO = STDIN_FILENO;
+enum OS_STDERR_FILENO = STDERR_FILENO;
 enum OS_F_DUPFD = F_DUPFD;
 
 alias off_t = long;
