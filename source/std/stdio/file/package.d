@@ -80,7 +80,7 @@ extern (C) int fputc(int c, FILE* stream)
     stream = checkStdHandler(stream);
     import std.traits;
     import std.meta;
-    // need to check std handlers
+
     static foreach (x; EnumMembers!(File.Type))
     {
         if (stream.type == x)
@@ -120,7 +120,7 @@ extern (C) int fgetc(FILE *stream)
     stream = checkStdHandler(stream);
     import std.traits;
     import std.meta;
-    // need to check std handlers
+
     static foreach (x; EnumMembers!(File.Type))
     {
         if (stream.type == x)
@@ -142,7 +142,7 @@ extern(C) long ftell(FILE* stream)
     stream = checkStdHandler(stream);
     import std.traits;
     import std.meta;
-    // need to check std handlers
+
     static foreach (x; EnumMembers!(File.Type))
     {
         if (stream.type == x)
@@ -162,7 +162,7 @@ extern(C) int fseek(FILE *stream, long offset, int whence)
     stream = checkStdHandler(stream);
     import std.traits;
     import std.meta;
-    // need to check std handlers
+
     static foreach (x; EnumMembers!(File.Type))
     {
         if (stream.type == x)
