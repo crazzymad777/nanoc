@@ -6,15 +6,10 @@ import nanoc.os.sysv.amd64.linux;
 import nanoc.std.errno: errno;
 import nanoc.os: sys_errno;
 
-noreturn pexit(int status)
-{
-    import nanoc.utils.noreturn: never_be_reached;
-
-    syscall(SYS_exit, status);
-    never_be_reached(); // supress D error
-}
 
 alias mode_t = int;
+private
+{
 enum EOF = -1;
 enum O_RDONLY = 0;
 enum O_WRONLY = 1;
@@ -22,9 +17,27 @@ enum O_RDWR = 2;
 enum O_CREAT = 64;
 enum O_TRUNC = 512;
 enum O_APPEND = 1024;
-
 enum STDOUT_FILENO = 1;
 enum F_DUPFD = 0;
+}
+
+enum OS_EOF = EOF;
+enum OS_READ_ONLY = O_RDONLY;
+enum OS_WRITE_ONLY = O_WRONLY;
+enum OS_READ_AND_WRITE = O_RDWR;
+enum OS_CREATE = O_CREAT;
+enum OS_TRUNCATE = O_TRUNC;
+enum OS_APPEND = O_APPEND;
+enum OS_STDOUT_FILENO = STDOUT_FILENO;
+enum OS_F_DUPFD = F_DUPFD;
+
+noreturn pexit(int status)
+{
+    import nanoc.utils.noreturn: never_be_reached;
+
+    syscall(SYS_exit, status);
+    never_be_reached(); // supress D error
+}
 
 extern(C) int puts(const char *str)
 {
@@ -60,10 +73,12 @@ extern(C) int getchar()
     return EOF;
 }
 
+import nanoc.os: StringBuffer;
+import nanoc.os: MemoryChunk;
 /// open and possibly create a file
-extern(C) int open(const char *pathname, int flags, mode_t mode)
+int fsopen(StringBuffer pathname, int flags, mode_t mode)
 {
-    int ret = cast(int) syscall(SYS_open, cast(void*) pathname, flags, mode);
+    int ret = cast(int) syscall(SYS_open, pathname.data, flags, mode);
     if (ret < 0)
     {
         errno = sys_errno;
@@ -71,9 +86,14 @@ extern(C) int open(const char *pathname, int flags, mode_t mode)
     return ret;
 }
 
-extern(C) size_t write(int fd, const void* buf, size_t count)
+size_t swrite_sb(int fd, StringBuffer buffer)
 {
-    size_t s = syscall(SYS_write, fd, buf, count);
+    return swrite(fd, MemoryChunk(buffer.data, buffer.count()));
+}
+
+size_t swrite(int fd, const MemoryChunk chunk)
+{
+    size_t s = syscall(SYS_write, fd, chunk.data, chunk.len);
     if (s == -1)
     {
         errno = sys_errno;
@@ -81,9 +101,9 @@ extern(C) size_t write(int fd, const void* buf, size_t count)
     return s;
 }
 
-extern(C) size_t read(int fd, void* buf, size_t count)
+size_t sread(int fd, MemoryChunk buffer)
 {
-    size_t s = syscall(SYS_read, fd, buf, count);
+    size_t s = syscall(SYS_read, fd, buffer.data, buffer.len);
     if (s == -1)
     {
         errno = sys_errno;
@@ -91,8 +111,8 @@ extern(C) size_t read(int fd, void* buf, size_t count)
     return s;
 }
 
-/// close a file descriptor
-extern(C) int close(int fd)
+/// close stream
+int sclose(int fd)
 {
     long s = syscall(SYS_close, fd);
     if (s < 0)
