@@ -189,7 +189,6 @@ extern (C) void clearerr(FILE *stream)
 extern (C) void rewind(FILE *stream)
 {
     stream = checkStdHandler(stream);
-    stream = checkStdHandler(stream);
     clearerr(stream);
     fseek(stream, 0, SEEK_SET);
 }
