@@ -190,19 +190,17 @@ enum P_ALL = 0;
 
 enum WEXITED = 0x00000004;
 
-// int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options)
-// fifrh arguments: struct rusage *
+int pwait()
+{
+    return waitid(P_ALL, 0, null, WEXITED);
+}
 
-
-extern (C)
 int waitid(idtype_t idtype, id_t id, void* infop, int options)
 {
     return _syscall_wait_wrapper(idtype, id, infop, options, null);
 }
 
-// fifrh arguments: struct rusage *
-@("metaomit")
-int _syscall_wait_wrapper(idtype_t idtype, id_t id, void* infop, int options, void* usage)
+private int _syscall_wait_wrapper(idtype_t idtype, id_t id, void* infop, int options, void* usage)
 {
     long s = syscall(SYS_waitid, idtype, id, infop, options, usage);
     if (s < 0)
@@ -211,7 +209,6 @@ int _syscall_wait_wrapper(idtype_t idtype, id_t id, void* infop, int options, vo
     }
     return cast(int) s;
 }
-
 
 extern(C) int mkdir(const char* pathname, mode_t mode)
 {

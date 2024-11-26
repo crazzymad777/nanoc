@@ -8,8 +8,8 @@ extern (C) int fork()
 }
 
 unittest {
-    import nanoc.sys.wait: waitid, P_ALL, WEXITED;
     import nanoc.std.stdlib: exit;
+    import nanoc.sys.wait: wait;
     const number = 10;
 
     for (int i = 0; i < number; i++)
@@ -24,13 +24,13 @@ unittest {
 
     for (int i = 0; i < number; i++)
     {
-        if (waitid(P_ALL, 0, null, WEXITED) < 0)
+        if (wait() < 0)
         {
             assert(false, "waitid failed");
         }
     }
 
-    if (waitid(P_ALL, 0, null, WEXITED) == 0)
+    if (wait() == 0)
     {
         assert(false, "waitid failed");
     }
