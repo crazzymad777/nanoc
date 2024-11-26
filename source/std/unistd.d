@@ -36,4 +36,10 @@ unittest {
     }
 }
 
+extern(C) int unlink(const char* pathname)
+{
+    import nanoc.os: StringBuffer, fsunlink;
+    return fsunlink(StringBuffer(pathname, -1));
+}
+
 public import nanoc.os;

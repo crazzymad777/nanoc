@@ -40,6 +40,13 @@ enum OS_MAP_SHARED = 0x0001;
 enum OS_MAP_PRIVATE = 0x0002;
 enum OS_MAP_ANONYMOUS = 0x0020;
 
+// wait function
+alias pid_t = int;
+alias id_t = int;
+alias idtype_t = int;
+enum P_ALL = 0;
+enum WEXITED = 0x00000004;
+
 noreturn pexit(int status)
 {
     import nanoc.utils.noreturn: never_be_reached;
@@ -120,7 +127,7 @@ int sclose(int fd)
     return cast(int) s;
 }
 
-extern(C) int fcntl(T...)(int fd, int op, T args)
+int fscntl(T...)(int fd, int op, T args)
 {
     long s = syscall(SYS_fcntl, fd, op, args);
     if (s < 0)
@@ -130,7 +137,7 @@ extern(C) int fcntl(T...)(int fd, int op, T args)
     return cast(int) s;
 }
 
-extern(C) int fsync(int fd)
+int fssync(int fd)
 {
     long s = syscall(SYS_fsync, fd);
     if (s < 0)
@@ -151,7 +158,7 @@ int pfork()
     return cast(int) pid;
 }
 
-extern (C) int rmdir(const char* pathname)
+int fsrmdir(const char* pathname)
 {
     long s = syscall(SYS_rmdir, pathname);
     if (s < 0)
@@ -161,9 +168,9 @@ extern (C) int rmdir(const char* pathname)
     return cast(int) s;
 }
 
-extern (C) int unlink(const char* pathname)
+int fsunlink(StringBuffer buf)
 {
-    long s = syscall(SYS_unlink, pathname);
+    long s = syscall(SYS_unlink, buf.data);
     if (s < 0)
     {
         errno = sys_errno;
@@ -180,15 +187,6 @@ long lseek(int fd, long offset, int whence)
     }
     return cast(int) s;
 }
-
-
-alias pid_t = int;
-alias id_t = int;
-
-alias idtype_t = int;
-enum P_ALL = 0;
-
-enum WEXITED = 0x00000004;
 
 int pwait()
 {
@@ -210,9 +208,9 @@ private int _syscall_wait_wrapper(idtype_t idtype, id_t id, void* infop, int opt
     return cast(int) s;
 }
 
-extern(C) int mkdir(const char* pathname, mode_t mode)
+int fsmkdir(StringBuffer path, mode_t mode)
 {
-    long s = syscall(SYS_mkdir, pathname, mode);
+    long s = syscall(SYS_mkdir, path.data, mode);
     if (s < 0)
     {
         errno = sys_errno;

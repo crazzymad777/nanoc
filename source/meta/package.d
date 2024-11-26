@@ -55,6 +55,7 @@ template Footprint()
         static import std.conv;
         import nanoc.std.stdio;
         import nanoc.meta.mine;
+        import nanoc.fcntl;
         import std.traits;
 
         import nanoc.sys.stat: mkdir;
