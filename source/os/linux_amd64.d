@@ -33,6 +33,13 @@ enum OS_STDOUT_FILENO = STDOUT_FILENO;
 enum OS_STDIN_FILENO = STDIN_FILENO;
 enum OS_F_DUPFD = F_DUPFD;
 
+alias off_t = long;
+enum OS_PROT_READ = 1;
+enum OS_PROT_WRITE = 2;
+enum OS_MAP_SHARED = 0x0001;
+enum OS_MAP_PRIVATE = 0x0002;
+enum OS_MAP_ANONYMOUS = 0x0020;
+
 noreturn pexit(int status)
 {
     import nanoc.utils.noreturn: never_be_reached;
@@ -216,14 +223,7 @@ extern(C) int mkdir(const char* pathname, mode_t mode)
     return cast(int) s;
 }
 
-alias off_t = long;
-enum PROT_READ = 1;
-enum PROT_WRITE = 2;
-enum MAP_SHARED = 0x0001;
-enum MAP_PRIVATE = 0x0002;
-enum MAP_ANONYMOUS = 0x0020;
-
-extern (C) void* mmap(void* addr, size_t length, int prot, int flags, int fd, off_t offset)
+void* mmap(void* addr, size_t length, int prot, int flags, int fd, off_t offset)
 {
     void* ptr = cast(void*) syscall(SYS_mmap, addr, length, prot, flags, fd, offset);
     if (ptr is null)
@@ -233,7 +233,7 @@ extern (C) void* mmap(void* addr, size_t length, int prot, int flags, int fd, of
     return ptr;
 }
 
-extern (C) int munmap(void* addr, size_t length)
+int munmap(void* addr, size_t length)
 {
     long s = syscall(SYS_munmap, addr, length);
     if (s < 0)
@@ -243,7 +243,7 @@ extern (C) int munmap(void* addr, size_t length)
     return cast(int) s;
 }
 
-extern(C) int set_thread_area(void *pointer)
+int tset_thread_area(void *pointer)
 {
     long s = syscall(SYS_arch_prctl, 0x1002, pointer);
     if (s < 0)
