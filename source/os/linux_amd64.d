@@ -6,7 +6,7 @@ import nanoc.os.sysv.amd64.linux;
 import nanoc.std.errno: errno;
 import nanoc.os: sys_errno;
 
-noreturn exit(int status)
+noreturn pexit(int status)
 {
     import nanoc.utils.noreturn: never_be_reached;
 
@@ -123,7 +123,7 @@ extern(C) int fsync(int fd)
 }
 
 /// Fork process
-int fork()
+int pfork()
 {
     long pid = syscall(SYS_fork);
     if (pid < 0)

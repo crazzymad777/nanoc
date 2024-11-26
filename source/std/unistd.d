@@ -3,8 +3,8 @@ module nanoc.std.unistd;
 /// Create child process
 extern (C) int fork()
 {
-    static import nanoc.os;
-    return nanoc.os.fork();
+    import nanoc.os: pfork;
+    return pfork();
 }
 
 unittest {
