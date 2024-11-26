@@ -19,3 +19,10 @@ extern (C) int munmap(void* addr, size_t length)
     static import nanoc.os;
     return nanoc.os.munmap(addr, length);
 }
+
+unittest
+{
+    void* ptr = mmap(null, 4096, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    assert(ptr !is null);
+    assert(munmap(ptr, 4096) == 0);
+}
