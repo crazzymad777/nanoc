@@ -42,4 +42,8 @@ extern(C) int unlink(const char* pathname)
     return fsunlink(StringBuffer(pathname, -1));
 }
 
-public import nanoc.os;
+extern(C) long lseek(int fd, long offset, int whence)
+{
+    import nanoc.os: fsseek;
+    return fsseek(fd, offset, whence);
+}

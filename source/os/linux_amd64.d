@@ -178,7 +178,7 @@ int fsunlink(StringBuffer buf)
     return cast(int) s;
 }
 
-long lseek(int fd, long offset, int whence)
+long fsseek(int fd, long offset, int whence)
 {
     long s = syscall(SYS_lseek, fd, offset, whence);
     if (s == -1)
