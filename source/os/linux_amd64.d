@@ -6,15 +6,10 @@ import nanoc.os.sysv.amd64.linux;
 import nanoc.std.errno: errno;
 import nanoc.os: sys_errno;
 
-noreturn exit(int status)
-{
-    import nanoc.utils.noreturn: never_be_reached;
-
-    syscall(SYS_exit, status);
-    never_be_reached(); // supress D error
-}
 
 alias mode_t = int;
+private
+{
 enum EOF = -1;
 enum O_RDONLY = 0;
 enum O_WRONLY = 1;
@@ -22,48 +17,50 @@ enum O_RDWR = 2;
 enum O_CREAT = 64;
 enum O_TRUNC = 512;
 enum O_APPEND = 1024;
-
+enum STDIN_FILENO = 0;
 enum STDOUT_FILENO = 1;
 enum F_DUPFD = 0;
-
-extern(C) int puts(const char *str)
-{
-    import nanoc.std.string: strlen;
-    if (syscall(SYS_write, 1, str, strlen(str)) >= 0)
-    {
-        return 0;
-    }
-    errno = sys_errno;
-    return EOF;
 }
 
-extern(C) int putchar(int octet)
+enum OS_EOF = EOF;
+enum OS_READ_ONLY = O_RDONLY;
+enum OS_WRITE_ONLY = O_WRONLY;
+enum OS_READ_AND_WRITE = O_RDWR;
+enum OS_CREATE = O_CREAT;
+enum OS_TRUNCATE = O_TRUNC;
+enum OS_APPEND = O_APPEND;
+enum OS_STDOUT_FILENO = STDOUT_FILENO;
+enum OS_STDIN_FILENO = STDIN_FILENO;
+enum OS_F_DUPFD = F_DUPFD;
+
+alias off_t = long;
+enum OS_PROT_READ = 1;
+enum OS_PROT_WRITE = 2;
+enum OS_MAP_SHARED = 0x0001;
+enum OS_MAP_PRIVATE = 0x0002;
+enum OS_MAP_ANONYMOUS = 0x0020;
+
+// wait function
+alias pid_t = int;
+alias id_t = int;
+alias idtype_t = int;
+enum P_ALL = 0;
+enum WEXITED = 0x00000004;
+
+noreturn pexit(int status)
 {
-    char x = cast(char) octet;
-    if (syscall(SYS_write, 1, &x, 1) >= 0)
-    {
-        return cast(int) x;
-    }
-    errno = sys_errno;
-    return EOF;
+    import nanoc.utils.noreturn: never_be_reached;
+
+    syscall(SYS_exit, status);
+    never_be_reached(); // supress D error
 }
 
-extern(C) int getchar()
-{
-    char x;
-    int ret = cast(int) syscall(SYS_read, 0, &x, 1);
-    if (ret >= 0)
-    {
-        return x;
-    }
-    errno = sys_errno;
-    return EOF;
-}
-
+import nanoc.os: StringBuffer;
+import nanoc.os: MemoryChunk;
 /// open and possibly create a file
-extern(C) int open(const char *pathname, int flags, mode_t mode)
+int fsopen(StringBuffer pathname, int flags, mode_t mode)
 {
-    int ret = cast(int) syscall(SYS_open, cast(void*) pathname, flags, mode);
+    int ret = cast(int) syscall(SYS_open, pathname.data, flags, mode);
     if (ret < 0)
     {
         errno = sys_errno;
@@ -71,9 +68,14 @@ extern(C) int open(const char *pathname, int flags, mode_t mode)
     return ret;
 }
 
-extern(C) size_t write(int fd, const void* buf, size_t count)
+size_t swrite_sb(int fd, StringBuffer buffer)
 {
-    size_t s = syscall(SYS_write, fd, buf, count);
+    return swrite(fd, MemoryChunk(buffer.data, buffer.count()));
+}
+
+size_t swrite(int fd, const MemoryChunk chunk)
+{
+    size_t s = syscall(SYS_write, fd, chunk.data, chunk.len);
     if (s == -1)
     {
         errno = sys_errno;
@@ -81,9 +83,9 @@ extern(C) size_t write(int fd, const void* buf, size_t count)
     return s;
 }
 
-extern(C) size_t read(int fd, void* buf, size_t count)
+size_t sread(int fd, MemoryChunk buffer)
 {
-    size_t s = syscall(SYS_read, fd, buf, count);
+    size_t s = syscall(SYS_read, fd, buffer.data, buffer.len);
     if (s == -1)
     {
         errno = sys_errno;
@@ -91,8 +93,31 @@ extern(C) size_t read(int fd, void* buf, size_t count)
     return s;
 }
 
-/// close a file descriptor
-extern(C) int close(int fd)
+int sread_single(int fd)
+{
+    char x;
+    size_t s = syscall(SYS_read, fd, &x, 1);
+    if (s == -1)
+    {
+        errno = sys_errno;
+        return OS_EOF;
+    }
+    return x;
+}
+
+int swrite_single(int fd, char x)
+{
+    size_t s = syscall(SYS_write, fd, &x, 1);
+    if (s < 0)
+    {
+        errno = sys_errno;
+        return OS_EOF;
+    }
+    return x;
+}
+
+/// close stream
+int sclose(int fd)
 {
     long s = syscall(SYS_close, fd);
     if (s < 0)
@@ -102,7 +127,7 @@ extern(C) int close(int fd)
     return cast(int) s;
 }
 
-extern(C) int fcntl(T...)(int fd, int op, T args)
+int fscntl(T...)(int fd, int op, T args)
 {
     long s = syscall(SYS_fcntl, fd, op, args);
     if (s < 0)
@@ -112,7 +137,7 @@ extern(C) int fcntl(T...)(int fd, int op, T args)
     return cast(int) s;
 }
 
-extern(C) int fsync(int fd)
+int fssync(int fd)
 {
     long s = syscall(SYS_fsync, fd);
     if (s < 0)
@@ -123,7 +148,7 @@ extern(C) int fsync(int fd)
 }
 
 /// Fork process
-int fork()
+int pfork()
 {
     long pid = syscall(SYS_fork);
     if (pid < 0)
@@ -133,7 +158,7 @@ int fork()
     return cast(int) pid;
 }
 
-extern (C) int rmdir(const char* pathname)
+int fsrmdir(const char* pathname)
 {
     long s = syscall(SYS_rmdir, pathname);
     if (s < 0)
@@ -143,9 +168,9 @@ extern (C) int rmdir(const char* pathname)
     return cast(int) s;
 }
 
-extern (C) int unlink(const char* pathname)
+int fsunlink(StringBuffer buf)
 {
-    long s = syscall(SYS_unlink, pathname);
+    long s = syscall(SYS_unlink, buf.data);
     if (s < 0)
     {
         errno = sys_errno;
@@ -153,7 +178,7 @@ extern (C) int unlink(const char* pathname)
     return cast(int) s;
 }
 
-long lseek(int fd, long offset, int whence)
+long fsseek(int fd, long offset, int whence)
 {
     long s = syscall(SYS_lseek, fd, offset, whence);
     if (s == -1)
@@ -163,28 +188,17 @@ long lseek(int fd, long offset, int whence)
     return cast(int) s;
 }
 
+int pwait()
+{
+    return waitid(P_ALL, 0, null, WEXITED);
+}
 
-alias pid_t = int;
-alias id_t = int;
-
-alias idtype_t = int;
-enum P_ALL = 0;
-
-enum WEXITED = 0x00000004;
-
-// int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options)
-// fifrh arguments: struct rusage *
-
-
-extern (C)
 int waitid(idtype_t idtype, id_t id, void* infop, int options)
 {
     return _syscall_wait_wrapper(idtype, id, infop, options, null);
 }
 
-// fifrh arguments: struct rusage *
-@("metaomit")
-int _syscall_wait_wrapper(idtype_t idtype, id_t id, void* infop, int options, void* usage)
+private int _syscall_wait_wrapper(idtype_t idtype, id_t id, void* infop, int options, void* usage)
 {
     long s = syscall(SYS_waitid, idtype, id, infop, options, usage);
     if (s < 0)
@@ -194,10 +208,9 @@ int _syscall_wait_wrapper(idtype_t idtype, id_t id, void* infop, int options, vo
     return cast(int) s;
 }
 
-
-extern(C) int mkdir(const char* pathname, mode_t mode)
+int fsmkdir(StringBuffer path, mode_t mode)
 {
-    long s = syscall(SYS_mkdir, pathname, mode);
+    long s = syscall(SYS_mkdir, path.data, mode);
     if (s < 0)
     {
         errno = sys_errno;
@@ -205,14 +218,7 @@ extern(C) int mkdir(const char* pathname, mode_t mode)
     return cast(int) s;
 }
 
-alias off_t = long;
-enum PROT_READ = 1;
-enum PROT_WRITE = 2;
-enum MAP_SHARED = 0x0001;
-enum MAP_PRIVATE = 0x0002;
-enum MAP_ANONYMOUS = 0x0020;
-
-extern (C) void* mmap(void* addr, size_t length, int prot, int flags, int fd, off_t offset)
+void* mmap(void* addr, size_t length, int prot, int flags, int fd, off_t offset)
 {
     void* ptr = cast(void*) syscall(SYS_mmap, addr, length, prot, flags, fd, offset);
     if (ptr is null)
@@ -222,7 +228,7 @@ extern (C) void* mmap(void* addr, size_t length, int prot, int flags, int fd, of
     return ptr;
 }
 
-extern (C) int munmap(void* addr, size_t length)
+int munmap(void* addr, size_t length)
 {
     long s = syscall(SYS_munmap, addr, length);
     if (s < 0)
@@ -232,7 +238,7 @@ extern (C) int munmap(void* addr, size_t length)
     return cast(int) s;
 }
 
-extern(C) int set_thread_area(void *pointer)
+int tset_thread_area(void *pointer)
 {
     long s = syscall(SYS_arch_prctl, 0x1002, pointer);
     if (s < 0)

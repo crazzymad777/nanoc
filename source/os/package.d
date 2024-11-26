@@ -39,6 +39,17 @@ struct Buffer(bool nullable = false, bool autocount = false)
         this.data = data;
         this.len = length;
     }
+
+    size_t count()
+    {
+        if (len == -1)
+        {
+            import nanoc.std.string: strlen;
+            len = strlen(data);
+        }
+        return len;
+    }
+
     const char* data;
     size_t len;
 }

@@ -14,11 +14,11 @@ extern (C)
     /// Terminate a process
     noreturn exit(int status)
     {
-        static import nanoc.os;
+        import nanoc.os: pexit;
         import nanoc.entry;
         __nanoc_fini();
 
-        nanoc.os.exit(status);
+        pexit(status);
     }
 
     void* calloc(size_t nmemb, size_t size)
