@@ -34,13 +34,14 @@ struct FILE {
     }
     int error;
     bool eof;
+    bool prealloc;
 };
 
 alias File = FILE;
 
-__gshared File fstderr = {type: File.Type.OS, raw_fd: STDERR_FILENO};
-__gshared File fstdout = {type: File.Type.OS, raw_fd: STDOUT_FILENO};
-__gshared File fstdin = {type: File.Type.OS, raw_fd: STDIN_FILENO};
+__gshared File fstderr = {type: File.Type.OS, raw_fd: STDERR_FILENO, prealloc: true};
+__gshared File fstdout = {type: File.Type.OS, raw_fd: STDOUT_FILENO, prealloc: true};
+__gshared File fstdin = {type: File.Type.OS, raw_fd: STDIN_FILENO, prealloc: true};
 
 File* checkStdHandler(File* f)
 {

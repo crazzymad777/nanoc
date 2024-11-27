@@ -14,7 +14,10 @@ template FileInterface(alias A)
         {
             return EOF;
         }
-        _free(f);
+        if (!f.prealloc)
+        {
+            _free(f);
+        }
         return 0;
     }
 
