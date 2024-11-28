@@ -1,6 +1,6 @@
 module nanoc.std.stdio.file;
 
-public import nanoc.std.stdio.file.memory: fmemopen;
+public import nanoc.std.stdio.file.memory: fmemopen, open_memstream;
 public import nanoc.std.stdio.file.raw_fd: fopen;
 import nanoc.std.stdio.file.raw_fd;
 import nanoc.std.stdio.file.memory;
