@@ -33,7 +33,7 @@ template FileInterface(alias A)
         // Dynamic size
         if (stream.memory.dynamic)
         {
-            auto result = _fseek(stream, SEEK_CUR, 0);
+            auto result = _fseek(stream, 0, SEEK_CUR);
             if (result >= 0)
             {
                 char* buf = cast(char*) memory.data_ptr;
@@ -186,12 +186,12 @@ unittest
     assert(f !is null);
     assert(fseek(f, 32, SEEK_SET) == 0);
     assert(fputc('a', f) == 'a');
-    // assert(fputc('b', f) == 'b');
-    // assert(fputc('c', f) == 'c');
+    assert(fputc('b', f) == 'b');
+    assert(fputc('c', f) == 'c');
     assert(fseek(f, 32, SEEK_SET) == 0);
     assert(fgetc(f) == 'a');
-    // assert(fgetc(f) == 'b');
-    // assert(fgetc(f) == 'c');
+    assert(fgetc(f) == 'b');
+    assert(fgetc(f) == 'c');
     fclose(f);
 }
 
