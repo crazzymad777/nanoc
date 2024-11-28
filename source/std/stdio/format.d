@@ -51,11 +51,12 @@ int fprint_unsigned_int(FILE* stream, uint value)
 
 unittest
 {
+    import nanoc.std.string: strcmp;
     char[32] buffer;
-    int result = snprintf(cast(char*) buffer, 32, "%d ", 25);
+    immutable char* expected = "25 -42 hello!".ptr;
+    int result = snprintf(cast(char*) buffer, 32, "%u %d %s", 25u, -42, cast(immutable char*)"hello!");
     assert(result >= 0);
-    assert(buffer[0] == '2');
-    assert(buffer[1] == '5');
+    assert(strcmp(cast(char*)buffer, expected) == 0);
 }
 
 extern (C) int snprintf(T...)(char* buffer, size_t size, const char* format, T args)
@@ -65,6 +66,10 @@ extern (C) int snprintf(T...)(char* buffer, size_t size, const char* format, T a
     {
         int result = fprintf(f, format, args);
         fclose(f);
+        if (result >= 0 && result < size)
+        {
+            buffer[result] = '\0';
+        }
         return result;
     }
     return EOF;
