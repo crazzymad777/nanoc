@@ -29,6 +29,13 @@ template FileInterface(alias A)
             memory.offset++;
             return x;
         }
+
+        // Dynamic size
+        if (stream.memory.dynamic)
+        {
+
+        }
+
         stream.eof = true;
         return EOF;
     }
@@ -62,9 +69,31 @@ template FileInterface(alias A)
             stream.memory.offset = offset;
         }
 
-        if (stream.memory.offset < 0 ||  stream.memory.offset >= stream.memory.size)
+        if (stream.memory.offset < 0)
+        {
+            stream.eof = true;
+            return -1;
+        }
+
+        if (stream.memory.offset >= stream.memory.size)
         {
             // because memory.size is CONST for given memory area
+
+            // Dynamic size, fill nulls
+            if (stream.memory.dynamic)
+            {
+                import nanoc.std.stdlib: realloc;
+                auto surplus = (stream.memory.offset+1-stream.memory.size)*3/2;
+                void* ptr = realloc(stream.memory.data_ptr, stream.memory.size + surplus);
+                if (ptr !is null)
+                {
+                    stream.memory.data_ptr = ptr;
+                    stream.memory.size = stream.memory.size + surplus;
+                    *(stream.memory.dynamic_data) = cast(void**) stream.memory.data_ptr;
+                    *(stream.memory.dynamic_size) = stream.memory.size;
+                }
+            }
+
             stream.eof = true;
             return -1;
         }
@@ -107,6 +136,27 @@ extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
         f.memory.size = size;
         f.memory.mode = O_RDWR;
         f.memory.offset = 0;
+        f.memory.dynamic = false;
+        return f;
+    }
+    return null;
+}
+
+extern (C) FILE *open_memstream(char **ptr, size_t *sizeloc)
+{
+    import nanoc.std.stdlib: _malloc;
+    FILE* f = cast(FILE*) _malloc(FILE.sizeof);
+    if (f)
+    {
+        f.type = FILE.Type.MEMORY_STREAM;
+        f.memory.data_ptr = *ptr;
+        f.memory.size = *sizeloc;
+        f.memory.mode = O_RDWR;
+        f.memory.offset = 0;
+        f.memory.nanoc = false;
+        f.memory.dynamic = true;
+        f.memory.dynamic_data = cast(void**) ptr;
+        f.memory.dynamic_size = sizeloc;
         return f;
     }
     return null;

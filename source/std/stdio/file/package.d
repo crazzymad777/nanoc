@@ -22,12 +22,20 @@ struct FILE {
 
         long offset;
         bool nanoc;
+        bool dynamic;
+        void** dynamic_data;
+        size_t* dynamic_size;
     };
+    struct Cookie
+    {
+        void* user_data;
+    }
 
     Type type;
     union {
         int raw_fd;
         Mem memory;
+        Cookie cookie;
         // fmemopen / memory as stream
         // memory stream / dynamic memory buffer
         // cookie
