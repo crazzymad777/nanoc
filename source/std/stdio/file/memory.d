@@ -33,7 +33,14 @@ template FileInterface(alias A)
         // Dynamic size
         if (stream.memory.dynamic)
         {
-
+            auto result = _fseek(stream, SEEK_CUR, 0);
+            if (result >= 0)
+            {
+                char* buf = cast(char*) memory.data_ptr;
+                buf[offset] = x;
+                memory.offset++;
+                return x;
+            }
         }
 
         stream.eof = true;
@@ -47,8 +54,9 @@ template FileInterface(alias A)
         if (offset < memory.size)
         {
             char* buf = cast(char*) memory.data_ptr;
+            char x = buf[offset];
             memory.offset += 1;
-            return cast(int) buf[offset];
+            return cast(int) x;
         }
         stream.eof = true;
         return EOF;
@@ -83,14 +91,19 @@ template FileInterface(alias A)
             if (stream.memory.dynamic)
             {
                 import nanoc.std.stdlib: realloc;
-                auto surplus = (stream.memory.offset+1-stream.memory.size)*3/2;
-                void* ptr = realloc(stream.memory.data_ptr, stream.memory.size + surplus);
+                import nanoc.std.string: memset;
+                auto surplus = stream.memory.offset+1-stream.memory.size;
+                byte* ptr = cast(byte*) realloc(stream.memory.data_ptr, stream.memory.size + surplus);
                 if (ptr !is null)
                 {
+                    byte* end = ptr + stream.memory.size;
+                    memset(end, 0, surplus);
+
                     stream.memory.data_ptr = ptr;
                     stream.memory.size = stream.memory.size + surplus;
                     *(stream.memory.dynamic_data) = cast(void**) stream.memory.data_ptr;
                     *(stream.memory.dynamic_size) = stream.memory.size;
+                    return 0;
                 }
             }
 
@@ -160,6 +173,26 @@ extern (C) FILE *open_memstream(char **ptr, size_t *sizeloc)
         return f;
     }
     return null;
+}
+
+unittest
+{
+    import nanoc.std.stdlib: malloc;
+    char* buffer = cast(char*) malloc(32);
+    char** buffer_ptr = &buffer;
+    size_t sizeloc = 32;
+    assert(buffer !is null);
+    FILE* f = open_memstream(buffer_ptr, &sizeloc);
+    assert(f !is null);
+    assert(fseek(f, 32, SEEK_SET) == 0);
+    assert(fputc('a', f) == 'a');
+    // assert(fputc('b', f) == 'b');
+    // assert(fputc('c', f) == 'c');
+    assert(fseek(f, 32, SEEK_SET) == 0);
+    assert(fgetc(f) == 'a');
+    // assert(fgetc(f) == 'b');
+    // assert(fgetc(f) == 'c');
+    fclose(f);
 }
 
 unittest
