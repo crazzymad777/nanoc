@@ -49,19 +49,28 @@ int fprint_unsigned_int(FILE* stream, uint value)
     return nbytes;
 }
 
+unittest
+{
+    char[32] buffer;
+    int result = snprintf(cast(char*) buffer, 32, "%d ", 25);
+    assert(result >= 0);
+    assert(buffer[0] == '2');
+    assert(buffer[1] == '5');
+}
+
 extern (C) int snprintf(T...)(char* buffer, size_t size, const char* format, T args)
 {
     FILE* f = fmemopen(buffer, size-1, "w");
     if (f)
     {
-        int result = fprintf(f, buffer, format, args);
+        int result = fprintf(f, format, args);
         fclose(f);
         return result;
     }
     return EOF;
 }
 
-extern (C) int printf(T...)(FILE* stream, const char* format, T args)
+extern (C) int printf(T...)(const char* format, T args)
 {
     return fprintf(cast(File*) STDOUT_FILENO, format, args);
 }
@@ -96,6 +105,7 @@ extern (C) int fprintf(T...)(FILE* stream, const char* format, T args)
                 int ret = -1;
                 if (x == 'u')
                 {
+                    // TYPES!!!!
                     static if (is(typeof(args[0]) == uint))
                     {
                         ret = fprint_unsigned_int(stream, args[0]);
