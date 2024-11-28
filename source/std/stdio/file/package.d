@@ -9,7 +9,7 @@ import nanoc.std.stdio.common;
 struct fpos_t
 {
     long offset;
-}
+};
 
 struct FILE {
     enum Type {
@@ -38,7 +38,7 @@ struct FILE {
         extern(C) int function(void*, const char*, int) writefn;
         extern(C) fpos_t function(void*, fpos_t, int) seekfn;
         extern(C) int function(void*) closefn;
-        void* user_data;
+        const void* user_data;
     }
 
     Type type;
