@@ -6,6 +6,11 @@ import nanoc.std.stdio.file.raw_fd;
 import nanoc.std.stdio.file.memory;
 import nanoc.std.stdio.common;
 
+struct fpos_t
+{
+    long offset;
+}
+
 struct FILE {
     enum Type {
         OS,
@@ -26,8 +31,13 @@ struct FILE {
         void** dynamic_data;
         size_t* dynamic_size;
     };
+
     struct Cookie
     {
+        extern(C) int function(void*, char*, int) readfn;
+        extern(C) int function(void*, const char*, int) writefn;
+        extern(C) fpos_t function(void*, fpos_t, int) seekfn;
+        extern(C) int function(void*) closefn;
         void* user_data;
     }
 
