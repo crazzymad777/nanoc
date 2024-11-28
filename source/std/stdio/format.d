@@ -49,6 +49,23 @@ int fprint_unsigned_int(FILE* stream, uint value)
     return nbytes;
 }
 
+extern (C) int snprintf(T...)(char* buffer, size_t size, const char* format, T args)
+{
+    FILE* f = fmemopen(buffer, size-1, "w");
+    if (f)
+    {
+        int result = fprintf(f, buffer, format, args);
+        fclose(f);
+        return result;
+    }
+    return EOF;
+}
+
+extern (C) int printf(T...)(FILE* stream, const char* format, T args)
+{
+    return fprintf(cast(File*) STDOUT_FILENO, format, args);
+}
+
 extern (C) int fprintf(T...)(FILE* stream, const char* format, T args)
 {
     // struct Conversion {}
