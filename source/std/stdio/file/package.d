@@ -7,14 +7,14 @@ import nanoc.std.stdio.file.raw_fd;
 import nanoc.std.stdio.file.memory;
 import nanoc.std.stdio.common;
 
-alias fpos_t = ulong;
+alias fpos_t = long;
 
 struct FILE {
     enum Type {
-        OS,
-        MEMORY_STREAM,
-        DYNAMIC_MEMORY_STREAM,
-        COOKIE
+        OS = 1,
+        MEMORY_STREAM = 2,
+        DYNAMIC_MEMORY_STREAM = 3,
+        COOKIE = 4
     }
     struct Mem {
         union {
@@ -55,9 +55,9 @@ struct FILE {
 
 alias File = FILE;
 
-__gshared File fstderr = {type: File.Type.OS, raw_fd: STDERR_FILENO, prealloc: true};
-__gshared File fstdout = {type: File.Type.OS, raw_fd: STDOUT_FILENO, prealloc: true};
 __gshared File fstdin = {type: File.Type.OS, raw_fd: STDIN_FILENO, prealloc: true};
+__gshared File fstdout = {type: File.Type.OS, raw_fd: STDOUT_FILENO, prealloc: true};
+__gshared File fstderr = {type: File.Type.OS, raw_fd: STDERR_FILENO, prealloc: true};
 
 File* checkStdHandler(File* f)
 {

@@ -113,7 +113,7 @@ template FileInterface(alias A)
 extern (C) FILE* fopen(const char* filename, const char* mode)
 {
     import nanoc.std.stdlib: _malloc, _free;
-    FILE* f = cast(FILE*) _malloc(FILE.sizeof);
+    FILE* f = cast(File*) _malloc(File.sizeof);
     if (f)
     {
         import nanoc.std.stdio.file.utils: parseMode;

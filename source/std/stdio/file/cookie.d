@@ -21,7 +21,7 @@ FILE* funopen(const void* cookie, int function(void*, char*, int) readfn, int fu
     File cookieFile = {type: File.Type.COOKIE, cookie: {user_data: cookie, readfn: readfn, writefn: writefn, seekfn: seekfn, closefn: closefn}};
 
     import nanoc.std.stdlib: _malloc;
-    FILE* f = cast(FILE*) _malloc(FILE.sizeof);
+    FILE* f = cast(File*) _malloc(File.sizeof);
     if (f)
     {
         *f = cookieFile;
@@ -121,7 +121,7 @@ template FileInterface(alias A)
     }
 }
 
-extern(C) private int readNull(void* cookie, char* x, int siz)
+extern(C) private int readZero(void* cookie, char* x, int siz)
 {
     int i = 0;
     for (; i < siz; i++)
@@ -138,7 +138,7 @@ extern(C) private int writeNull(void* cookie, const char* x, int siz)
 
 unittest
 {
-    FILE* f = funopen(null, &readNull, null, null, null);
+    FILE* f = funopen(null, &readZero, null, null, null);
     assert(f !is null);
     for (int i = 0; i < 32; i++)
     {
