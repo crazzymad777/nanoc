@@ -23,7 +23,7 @@ struct FILE {
 
         long offset;
         bool nanoc;
-        bool dynamic;
+        // bool dynamic;
         void** dynamic_data;
         size_t* dynamic_size;
     };

@@ -31,7 +31,7 @@ template FileInterface(alias A)
         }
 
         // Dynamic size
-        if (stream.memory.dynamic)
+        static if (A == File.Type.DYNAMIC_MEMORY_STREAM)
         {
             auto result = _fseek(stream, 0, SEEK_CUR);
             if (result >= 0)
@@ -88,7 +88,7 @@ template FileInterface(alias A)
             // because memory.size is CONST for given memory area
 
             // Dynamic size, fill nulls
-            if (stream.memory.dynamic)
+            static if (A == File.Type.DYNAMIC_MEMORY_STREAM)
             {
                 import nanoc.std.stdlib: realloc;
                 import nanoc.std.string: memset;
@@ -158,7 +158,6 @@ extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
         f.memory.size = size;
         f.mode = O_RDWR;
         f.memory.offset = 0;
-        f.memory.dynamic = false;
         return f;
     }
     return null;
@@ -176,7 +175,6 @@ extern (C) FILE *open_memstream(char **ptr, size_t *sizeloc)
         f.mode = O_RDWR;
         f.memory.offset = 0;
         f.memory.nanoc = false;
-        f.memory.dynamic = true;
         f.memory.dynamic_data = cast(void**) ptr;
         f.memory.dynamic_size = sizeloc;
         return f;
