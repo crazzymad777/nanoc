@@ -129,6 +129,7 @@ extern (C) FILE* fopen(const char* filename, const char* mode)
         }
 
         import std.conv;
+        f.mode = imode;
         f.raw_fd = open(filename, imode, std.conv.octal!"0644");
         if (f.raw_fd)
         {

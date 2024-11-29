@@ -31,6 +31,16 @@ FILE* funopen(const void* cookie, int function(void*, char*, int) readfn, int fu
 extern(C)
 FILE *fopencookie(void* cookie, const char* mode, cookie_io_functions_t io_funcs)
 {
-    // mode?
-    return funopen(cookie, io_funcs.read, io_funcs.write, io_funcs.seek, io_funcs.close);
+    import nanoc.std.stdio.file.utils: parseMode;
+    int imode = 0;
+    if (parseMode(mode, &imode) is null)
+    {
+        import nanoc.std.errno: errno;
+        errno = -22; // EINVAL
+        return null;
+    }
+
+    File* f = funopen(cookie, io_funcs.read, io_funcs.write, io_funcs.seek, io_funcs.close);
+    f.mode = imode;
+    return f;
 }

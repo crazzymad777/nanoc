@@ -23,7 +23,6 @@ struct FILE {
             void* data_ptr;
         }
         size_t size;
-        int mode;
 
         long offset;
         bool nanoc;
@@ -50,6 +49,7 @@ struct FILE {
         // memory stream / dynamic memory buffer
         // cookie
     }
+    int mode;
     int error;
     bool eof;
     bool prealloc;

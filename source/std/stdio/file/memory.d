@@ -126,6 +126,15 @@ template FileInterface(alias A)
 
 extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
 {
+    import nanoc.std.stdio.file.utils: parseMode;
+    int imode = 0;
+    if (parseMode(mode, &imode) is null)
+    {
+        import nanoc.std.errno: errno;
+        errno = -22; // EINVAL
+        return null;
+    }
+
     import nanoc.std.stdlib: _malloc, _free;
     FILE* f = cast(FILE*) _malloc(FILE.sizeof);
     if (f)
@@ -147,7 +156,7 @@ extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
             f.memory.data_ptr = buf;
         }
         f.memory.size = size;
-        f.memory.mode = O_RDWR;
+        f.mode = O_RDWR;
         f.memory.offset = 0;
         f.memory.dynamic = false;
         return f;
@@ -164,7 +173,7 @@ extern (C) FILE *open_memstream(char **ptr, size_t *sizeloc)
         f.type = FILE.Type.MEMORY_STREAM;
         f.memory.data_ptr = *ptr;
         f.memory.size = *sizeloc;
-        f.memory.mode = O_RDWR;
+        f.mode = O_RDWR;
         f.memory.offset = 0;
         f.memory.nanoc = false;
         f.memory.dynamic = true;
