@@ -110,18 +110,57 @@ extern (C) int fputc(int c, FILE* stream)
 
 extern (C) size_t fwrite(const void* ptr, size_t size, size_t nitems, FILE* stream)
 {
+    if (size == 0)
+    {
+        return 0;
+    }
+
     size_t n = nitems;
     import std.traits;
     import std.meta;
 
     byte* data = cast(byte*) ptr;
-    general: for (;n > 0; n--)
+    general: for (; n > 0; n--)
     {
         static foreach (x; EnumMembers!(File.Type))
         {
             if (stream.type == x)
             {
                 int ret = FileInterface!(Alias!x)._write(stream, data, size);
+                if (ret == size)
+                {
+                    data += size;
+                }
+                else
+                {
+                    break general;
+                }
+            }
+        }
+    }
+
+    return nitems - n;
+}
+
+extern (C) size_t fread(void* ptr, size_t size, size_t nitems, FILE* stream)
+{
+    if (size == 0)
+    {
+        return 0;
+    }
+
+    size_t n = nitems;
+    import std.traits;
+    import std.meta;
+
+    byte* data = cast(byte*) ptr;
+    general: for (; n > 0; n--)
+    {
+        static foreach (x; EnumMembers!(File.Type))
+        {
+            if (stream.type == x)
+            {
+                int ret = FileInterface!(Alias!x)._read(stream, data, size);
                 if (ret == size)
                 {
                     data += size;

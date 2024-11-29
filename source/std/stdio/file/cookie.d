@@ -129,6 +129,16 @@ template FileInterface(alias A)
         }
         return EOF;
     }
+
+    int _read(FILE* stream, void* data, size_t size)
+    {
+        if (stream.cookie.readfn !is null)
+        {
+            import nanoc.std.string: strlen;
+            return stream.cookie.readfn(cast(void*)stream.cookie.user_data, cast(char*) data, cast(int) size);
+        }
+        return EOF;
+    }
 }
 
 extern(C) private int readZero(void* cookie, char* x, int siz)

@@ -137,6 +137,21 @@ template FileInterface(alias A)
         _fseek(stream, -size, SEEK_CUR);
         return EOF;
     }
+
+    int _read(FILE* stream, void* data, size_t size)
+    {
+        auto offset = stream.memory.offset;
+        auto result = _fseek(stream, size, SEEK_CUR);
+        byte* start = cast(byte*) stream.memory.data_ptr;
+        if (result == 0 || (result == EOF && stream.memory.size == stream.memory.offset))
+        {
+            import nanoc.std.string: memcpy;
+            memcpy(data, start + offset, size);
+            return cast(int) size;
+        }
+        _fseek(stream, -size, SEEK_CUR);
+        return EOF;
+    }
 }
 
 unittest

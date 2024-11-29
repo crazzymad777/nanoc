@@ -116,6 +116,14 @@ template FileInterface(alias A)
         long r = write(stream.raw_fd, cast(char*) data, size);
         return cast(int) r;
     }
+
+    int _read(FILE* stream, void* data, size_t size)
+    {
+        import nanoc.os;
+
+        long r = read(stream.raw_fd, cast(char*) data, size);
+        return cast(int) r;
+    }
 }
 
 extern (C) FILE* fopen(const char* filename, const char* mode)
