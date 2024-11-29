@@ -4,7 +4,7 @@ import nanoc.std.stdio.common;
 import nanoc.std.stdio.file;
 
 template FileInterface(alias A)
-    if (A == File.Type.MEMORY_STREAM)
+    if (A == File.Type.MEMORY_STREAM || A == File.Type.DYNAMIC_MEMORY_STREAM)
 {
     int _fclose(File* f)
     {
@@ -170,7 +170,7 @@ extern (C) FILE *open_memstream(char **ptr, size_t *sizeloc)
     FILE* f = cast(FILE*) _malloc(FILE.sizeof);
     if (f)
     {
-        f.type = FILE.Type.MEMORY_STREAM;
+        f.type = FILE.Type.DYNAMIC_MEMORY_STREAM;
         f.memory.data_ptr = *ptr;
         f.memory.size = *sizeloc;
         f.mode = O_RDWR;

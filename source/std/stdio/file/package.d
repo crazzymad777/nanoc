@@ -6,16 +6,13 @@ import nanoc.std.stdio.file.raw_fd;
 import nanoc.std.stdio.file.memory;
 import nanoc.std.stdio.common;
 
-struct fpos_t
-{
-    long offset;
-};
+alias fpos_t = ulong;
 
 struct FILE {
     enum Type {
         OS,
         MEMORY_STREAM,
-        // DYNAMIC_MEMORY_STREAM,
+        DYNAMIC_MEMORY_STREAM,
         // COOKIE
     }
     struct Mem {
