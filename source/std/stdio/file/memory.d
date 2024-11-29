@@ -122,6 +122,33 @@ template FileInterface(alias A)
         }
         return stream.memory.offset;
     }
+
+    int _write(FILE* stream, const void* data, size_t size)
+    {
+        auto offset = stream.memory.offset;
+        auto result = _fseek(stream, size, SEEK_CUR);
+        byte* start = cast(byte*) stream.memory.data_ptr;
+        if (result == 0 || (result == EOF && stream.memory.size == stream.memory.offset))
+        {
+            import nanoc.std.string: memcpy;
+            memcpy(start + offset, data, size);
+            return cast(int) size;
+        }
+        _fseek(stream, -size, SEEK_CUR);
+        return EOF;
+    }
+}
+
+unittest
+{
+    import nanoc.std.stdio.format.print;
+    char[32] memory;
+    char[32] buffer;
+    File* f = fmemopen(cast(void*) memory, 32, "w");
+    assert(f !is null);
+    size_t r = fwrite(cast(void*) buffer, 4, 8, f);
+    assert(r == 8);
+    fclose(f);
 }
 
 extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
