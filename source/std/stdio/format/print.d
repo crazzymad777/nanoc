@@ -1,5 +1,7 @@
 module nanoc.std.stdio.format.print;
 
+import nanoc.std.stdio.format.utils;
+import nanoc.std.stdio.common;
 import nanoc.std.stdio.file;
 
 extern (C) int snprintf(T...)(char* buffer, size_t size, const char* format, T args)
