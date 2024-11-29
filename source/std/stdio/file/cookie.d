@@ -18,7 +18,7 @@ struct cookie_io_functions_t {
 extern (C)
 FILE* funopen(const void* cookie, int function(void*, char*, int) readfn, int function(void*, const char*, int) writefn, fpos_t function(void*, fpos_t, int) seekfn, int function(void*) closefn)
 {
-    File cookieFile = {cookie: {user_data: cookie, readfn: readfn, writefn: writefn, seekfn: seekfn, closefn: closefn}};
+    File cookieFile = {type: File.Type.COOKIE, cookie: {user_data: cookie, readfn: readfn, writefn: writefn, seekfn: seekfn, closefn: closefn}};
 
     import nanoc.std.stdlib: _malloc;
     FILE* f = cast(FILE*) _malloc(FILE.sizeof);
@@ -67,7 +67,7 @@ template FileInterface(alias A)
         {
             char x;
             int ret = stream.cookie.readfn(cast(void*)stream.cookie.user_data, &x, 1);
-            if (ret == 0)
+            if (ret >= 0)
             {
                 return x;
             }
@@ -82,7 +82,7 @@ template FileInterface(alias A)
         {
             char x = cast(char) c;
             int ret = stream.cookie.writefn(cast(void*)stream.cookie.user_data, &x, 1);
-            if (ret == 0)
+            if (ret >= 0)
             {
                 return x;
             }
@@ -119,4 +119,44 @@ template FileInterface(alias A)
         }
         return EOF;
     }
+}
+
+extern(C) private int readNull(void* cookie, char* x, int siz)
+{
+    int i = 0;
+    for (; i < siz; i++)
+    {
+        x[i] = '\0';
+    }
+    return i;
+}
+
+extern(C) private int writeNull(void* cookie, const char* x, int siz)
+{
+    return siz;
+}
+
+unittest
+{
+    FILE* f = funopen(null, &readNull, null, null, null);
+    assert(f !is null);
+    for (int i = 0; i < 32; i++)
+    {
+        assert(fgetc(f) == '\0');
+    }
+    fclose(f);
+}
+
+unittest
+{
+    import nanoc.std.string: strlen;
+    FILE* f = funopen(null, null, &writeNull, null, null);
+    assert(f !is null);
+    for (int i = 0; i < 32; i++)
+    {
+        assert(fputc(i, f) == i);
+    }
+    auto str = "hello".ptr;
+    assert(fputs(str, f) == strlen(str));
+    fclose(f);
 }
