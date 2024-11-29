@@ -9,56 +9,72 @@ import nanoc.std.stdio.common;
 
 alias fpos_t = long;
 
+/// Internal struct for File
 struct FILE {
+    /// Define implementation of File template interface (template FileInterface(alias A))
     enum Type {
         OS = 1,
         MEMORY_STREAM = 2,
         DYNAMIC_MEMORY_STREAM = 3,
         COOKIE = 4
     }
+
+    /// Struct for memory streams
     struct Mem {
-        union {
-            void* data_ptr;
-        }
+        /// pointer to buffer
+        void* data_ptr;
+        /// size of buffer
         size_t size;
-
+        /// ftell
         long offset;
-        bool nanoc;
-        // bool dynamic;
-        void** dynamic_data;
-        size_t* dynamic_size;
-    };
+        /// indicates callee must free data_ptr
+        bool callee_free;
 
+        /// Only dynamic memory stream: for updating user point
+        void** dynamic_data;
+        /// Only dynamic memory stream: for updating user size
+        size_t* dynamic_size;
+    }
+
+    /// Struct for Cookie interface with given user data
     struct Cookie
     {
-        extern(C) int function(void*, char*, int) readfn;
-        extern(C) int function(void*, const char*, int) writefn;
-        extern(C) fpos_t function(void*, fpos_t, int) seekfn;
-        extern(C) int function(void*) closefn;
+        extern(C) int function(void* user_data, char*, int) readfn;
+        extern(C) int function(void* user_data, const char*, int) writefn;
+        extern(C) fpos_t function(void* user_data, fpos_t, int) seekfn;
+        extern(C) int function(void* user_data) closefn;
         const void* user_data;
     }
 
+    /// Type of file obviously
     Type type;
+
+    // Generic fields, epilogue:
+    /// mode of File
+    int mode;
+    /// File error
+    int error;
+    /// End-of-file indicator
+    bool eof;
+    /// Preallocated File struct (do not issue free)
+    bool prealloc;
+
+    /// Type-dependent fields:
     union {
         int raw_fd;
         Mem memory;
         Cookie cookie;
-        // fmemopen / memory as stream
-        // memory stream / dynamic memory buffer
-        // cookie
     }
-    int mode;
-    int error;
-    bool eof;
-    bool prealloc;
 };
 
+/// Adorable alias
 alias File = FILE;
 
 __gshared File fstdin = {type: File.Type.OS, raw_fd: STDIN_FILENO, prealloc: true};
 __gshared File fstdout = {type: File.Type.OS, raw_fd: STDOUT_FILENO, prealloc: true};
 __gshared File fstderr = {type: File.Type.OS, raw_fd: STDERR_FILENO, prealloc: true};
 
+/// Return preallocated File* if standard handler
 File* checkStdHandler(File* f)
 {
     if (f == cast(File*) STDERR_FILENO)
@@ -76,6 +92,7 @@ File* checkStdHandler(File* f)
     return f;
 }
 
+/// Close stream
 extern (C) int fclose(FILE* f)
 {
     f = checkStdHandler(f);

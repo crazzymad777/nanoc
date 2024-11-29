@@ -9,7 +9,7 @@ template FileInterface(alias A)
     int _fclose(File* f)
     {
         import nanoc.std.stdlib: _free;
-        if (f.memory.nanoc)
+        if (f.memory.callee_free)
         {
             _free(f.memory.data_ptr);
         }
@@ -191,7 +191,7 @@ extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
                 return null;
             }
             f.memory.data_ptr = x;
-            f.memory.nanoc = true;
+            f.memory.callee_free = true;
         }
         else
         {
@@ -216,7 +216,7 @@ extern (C) FILE *open_memstream(char **ptr, size_t *sizeloc)
         f.memory.size = *sizeloc;
         f.mode = O_RDWR;
         f.memory.offset = 0;
-        f.memory.nanoc = false;
+        f.memory.callee_free = false;
         f.memory.dynamic_data = cast(void**) ptr;
         f.memory.dynamic_size = sizeloc;
         return f;
