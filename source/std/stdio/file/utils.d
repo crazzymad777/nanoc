@@ -86,4 +86,7 @@ unittest
     assert(imode == (O_RDWR | O_CREAT | O_TRUNC));
     parseMode("a+", &imode);
     assert(imode == (O_RDWR | O_CREAT | O_APPEND));
+
+    int* result = parseMode("wa", &imode); // what do you want ???
+    assert(result is null);
 }
