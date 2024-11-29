@@ -47,3 +47,20 @@ int fprint_unsigned_int(FILE* stream, uint value)
     }
     return nbytes;
 }
+
+unittest
+{
+    import nanoc.std.string: strcmp;
+    char[32] buffer;
+    char* buffer_ptr = cast(char*) &buffer;
+    File* f = fmemopen(buffer_ptr, 32, "w");
+    assert(f !is null);
+    fprint_unsigned_int(f, 4294967295);
+    fputc('\0', f);
+    assert(strcmp(buffer_ptr, "4294967295".ptr) == 0);
+    rewind(f);
+    fprint_signed_int(f, -2147483648);
+    fputc('\0', f);
+    assert(strcmp(buffer_ptr, "-2147483648".ptr) == 0);
+    fclose(f);
+}
