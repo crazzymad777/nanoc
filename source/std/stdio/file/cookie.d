@@ -1,5 +1,6 @@
 module nanoc.std.stdio.file.cookie;
 
+import nanoc.std.stdio.common;
 import nanoc.std.stdio.file;
 
 alias cookie_read_function_t = extern (C) int function(void*, char*, int);
@@ -43,4 +44,79 @@ FILE *fopencookie(void* cookie, const char* mode, cookie_io_functions_t io_funcs
     File* f = funopen(cookie, io_funcs.read, io_funcs.write, io_funcs.seek, io_funcs.close);
     f.mode = imode;
     return f;
+}
+
+template FileInterface(alias A)
+    if (A == File.Type.COOKIE)
+{
+    int _fclose(File* f)
+    {
+        import nanoc.std.stdlib: _free;
+        int ret = 0;
+        if (f.cookie.closefn !is null)
+        {
+            ret = f.cookie.closefn(cast(void*)f.cookie.user_data);
+        }
+        _free(f);
+        return ret;
+    }
+
+    int _fgetc(FILE* stream)
+    {
+        if (stream.cookie.readfn !is null)
+        {
+            char x;
+            int ret = stream.cookie.readfn(cast(void*)stream.cookie.user_data, &x, 1);
+            if (ret == 0)
+            {
+                return x;
+            }
+            return EOF;
+        }
+        return EOF;
+    }
+
+    int _fputc(int c, FILE* stream)
+    {
+        if (stream.cookie.writefn !is null)
+        {
+            char x = cast(char) c;
+            int ret = stream.cookie.writefn(cast(void*)stream.cookie.user_data, &x, 1);
+            if (ret == 0)
+            {
+                return x;
+            }
+            return EOF;
+        }
+        return EOF;
+    }
+
+    int _fputs(const char* s, FILE* stream)
+    {
+        if (stream.cookie.writefn !is null)
+        {
+            import nanoc.std.string: strlen;
+            return stream.cookie.writefn(cast(void*)stream.cookie.user_data, s, cast(int) strlen(s));
+        }
+        return EOF;
+    }
+
+    int _fseek(FILE *stream, long offset, int whence)
+    {
+        if (stream.cookie.seekfn !is null)
+        {
+            return cast(int) stream.cookie.seekfn(cast(void*)stream.cookie.user_data, cast(fpos_t) offset, whence);
+        }
+        return EOF;
+    }
+
+    long _ftell(FILE *stream)
+    {
+        if (stream.cookie.seekfn !is null)
+        {
+            // I believe It should work
+            return stream.cookie.seekfn(cast(void*)stream.cookie.user_data, 0, SEEK_CUR);
+        }
+        return EOF;
+    }
 }
