@@ -60,11 +60,30 @@ int* parseMode(const char* mode, int* rmode)
         {
             imode |= O_CREAT | O_APPEND;
         }
-        else
+        else if (!read)
         {
             imode |= O_CREAT | O_TRUNC;
         }
     }
     *rmode = imode;
     return rmode;
+}
+
+unittest
+{
+    int imode = 0;
+    parseMode("r", &imode);
+    assert(imode == O_RONLY);
+    parseMode("w", &imode);
+    assert(imode == (O_WRONLY | O_CREAT | O_TRUNC));
+    parseMode("a", &imode);
+    assert(imode == (O_WRONLY | O_CREAT | O_APPEND));
+    parseMode("r+", &imode);
+    assert(imode == (O_RDWR));
+    parseMode("rw", &imode);
+    assert(imode == (O_RDWR));
+    parseMode("w+", &imode);
+    assert(imode == (O_RDWR | O_CREAT | O_TRUNC));
+    parseMode("a+", &imode);
+    assert(imode == (O_RDWR | O_CREAT | O_APPEND));
 }
