@@ -116,65 +116,16 @@ extern (C) FILE* fopen(const char* filename, const char* mode)
     FILE* f = cast(FILE*) _malloc(FILE.sizeof);
     if (f)
     {
+        import nanoc.std.stdio.file.utils: parseMode;
+
         f.type = FILE.Type.OS;
         int imode = 0;
-        // rwa+cemx
-        bool read = false;
-        bool write = false;
-        bool extend = false; // +
-        bool append = false;
-        for (int i = 0; i < 8 && mode[i] != 0; i++)
-        {
-            if (mode[i] == 'r')
-            {
-                read = true;
-            }
-            if (mode[i] == 'w')
-            {
-                write = true;
-            }
-            if (mode[i] == 'a')
-            {
-                append = true;
-            }
-            if (mode[i] == '+')
-            {
-                extend = true;
-            }
-        }
-
-        if (write && append)
+        if (parseMode(mode, &imode) is null)
         {
             import nanoc.std.errno: errno;
             errno = -22; // EINVAL
             _free(f);
             return null;
-        }
-
-        if ((write || append) && read)
-        {
-            imode |= O_RDWR;
-        }
-        else if (write || append)
-        {
-            imode |= O_WRONLY;
-        }
-
-        if (extend)
-        {
-            imode = O_RDWR;
-        }
-
-        if (imode == O_WRONLY || imode == O_RDWR)
-        {
-            if (append)
-            {
-                imode |= O_CREAT | O_APPEND;
-            }
-            else
-            {
-                imode |= O_CREAT | O_TRUNC;
-            }
         }
 
         import std.conv;
