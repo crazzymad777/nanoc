@@ -1,7 +1,9 @@
 module nanoc.std.stdio.file;
 
-public import nanoc.std.stdio.file.memory: fmemopen, open_memstream;
+public import nanoc.std.stdio.file.dynamic_memory: open_memstream;
+public import nanoc.std.stdio.file.memory: fmemopen;
 public import nanoc.std.stdio.file.raw_fd: fopen;
+import nanoc.std.stdio.file.dynamic_memory;
 import nanoc.std.stdio.file.cookie;
 import nanoc.std.stdio.file.raw_fd;
 import nanoc.std.stdio.file.memory;

@@ -4,7 +4,7 @@ import nanoc.std.stdio.common;
 import nanoc.std.stdio.file;
 
 template FileInterface(alias A)
-    if (A == File.Type.MEMORY_STREAM || A == File.Type.DYNAMIC_MEMORY_STREAM)
+    if (A == File.Type.MEMORY_STREAM)
 {
     int _fclose(File* f)
     {
@@ -28,22 +28,6 @@ template FileInterface(alias A)
             buf[offset] = x;
             memory.offset++;
             return x;
-        }
-
-        // Dynamic size
-        static if (A == File.Type.DYNAMIC_MEMORY_STREAM)
-        {
-            if (stream.memory.offset >= stream.memory.size)
-            {
-                memory.offset++;
-                if (realloc_dynamic_stream_buffer(stream, offset))
-                {
-                    char* buf = cast(char*) memory.data_ptr;
-                    buf[offset] = x;
-                    memory.offset++;
-                    return x;
-                }
-            }
         }
 
         stream.eof = true;
@@ -80,28 +64,12 @@ template FileInterface(alias A)
             stream.memory.offset = offset;
         }
 
-        if (stream.memory.offset < 0)
+        if (stream.memory.offset < 0 || stream.memory.offset >= stream.memory.size)
         {
             stream.eof = true;
             return -1;
         }
 
-        if (stream.memory.offset >= stream.memory.size)
-        {
-            // because memory.size is CONST for given memory area
-
-            // Dynamic size, fill nulls
-            static if (A == File.Type.DYNAMIC_MEMORY_STREAM)
-            {
-                if (realloc_dynamic_stream_buffer(stream, stream.memory.offset))
-                {
-                    return stream.memory.offset;
-                }
-            }
-
-            stream.eof = true;
-            return -1;
-        }
         return stream.memory.offset;
     }
 
@@ -109,19 +77,7 @@ template FileInterface(alias A)
     {
         if (stream.memory.offset + size > stream.memory.size)
         {
-            static if (A == File.Type.MEMORY_STREAM)
-            {
-                return EOF;
-            }
-            static if (A == File.Type.DYNAMIC_MEMORY_STREAM)
-            {
-                auto offset = stream.memory.offset; // preserve prior offset
-                stream.memory.offset += size;
-                if (!realloc_dynamic_stream_buffer(stream, offset))
-                {
-                    return EOF;
-                }
-            }
+            return EOF;
         }
 
         auto offset = stream.memory.offset;
@@ -135,7 +91,6 @@ template FileInterface(alias A)
     {
         if (stream.memory.offset + size > stream.memory.size)
         {
-            // read zeroes for dynamic stream?
             return EOF;
         }
 
@@ -196,67 +151,6 @@ extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
         return f;
     }
     return null;
-}
-
-extern (C) FILE *open_memstream(char **ptr, size_t *sizeloc)
-{
-    import nanoc.std.stdlib: _malloc;
-    FILE* f = cast(FILE*) _malloc(FILE.sizeof);
-    if (f)
-    {
-        f.type = FILE.Type.DYNAMIC_MEMORY_STREAM;
-        f.memory.data_ptr = *ptr;
-        f.memory.size = *sizeloc;
-        f.mode = O_RDWR;
-        f.memory.offset = 0;
-        f.memory.callee_free = false;
-        f.memory.dynamic_data = cast(void**) ptr;
-        f.memory.dynamic_size = sizeloc;
-        return f;
-    }
-    return null;
-}
-
-private bool realloc_dynamic_stream_buffer(FILE* stream, fpos_t setOffset)
-{
-    import nanoc.std.stdlib: realloc;
-    import nanoc.std.string: memset;
-    auto surplus = stream.memory.offset+1-stream.memory.size;
-    byte* ptr = cast(byte*) realloc(stream.memory.data_ptr, stream.memory.size + surplus);
-    if (ptr !is null)
-    {
-        byte* end = ptr + stream.memory.size;
-        memset(end, 0, surplus);
-
-        stream.memory.data_ptr = ptr;
-        stream.memory.size = stream.memory.size + surplus;
-        *(stream.memory.dynamic_data) = cast(void**) stream.memory.data_ptr;
-        *(stream.memory.dynamic_size) = stream.memory.size;
-        stream.memory.offset = setOffset;
-        return true;
-    }
-    stream.memory.offset = setOffset;
-    return false;
-}
-
-unittest
-{
-    import nanoc.std.stdlib: malloc;
-    char* buffer = cast(char*) malloc(32);
-    char** buffer_ptr = &buffer;
-    size_t sizeloc = 32;
-    assert(buffer !is null);
-    FILE* f = open_memstream(buffer_ptr, &sizeloc);
-    assert(f !is null);
-    assert(fseek(f, 32, SEEK_SET) == 0);
-    assert(fputc('a', f) == 'a');
-    assert(fputc('b', f) == 'b');
-    assert(fputc('c', f) == 'c');
-    assert(fseek(f, 32, SEEK_SET) == 0);
-    assert(fgetc(f) == 'a');
-    assert(fgetc(f) == 'b');
-    assert(fgetc(f) == 'c');
-    fclose(f);
 }
 
 unittest
