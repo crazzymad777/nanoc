@@ -37,7 +37,6 @@ private void profit(char x)
         x = '_';
     }
     putchar(x);
-    fssync(STDOUT_FILENO);
 }
 
 /// Print string
@@ -48,13 +47,11 @@ private void profit(string y)
         foreach (x; y)
         {
             profit(x);
-            fssync(STDOUT_FILENO);
         }
     }
     else
     {
         puts(y.ptr);
-        fssync(STDOUT_FILENO);
     }
 }
 
@@ -76,15 +73,22 @@ void show_meta_member(string x, alias member)()
     {
         //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
 
-        put_alias_seq((ReturnType!member).stringof, ' ', x, '(');
-        int i = 0;
-        foreach (p ; Parameters!member)
+        static if (functionLinkage!member == "C")
         {
-            if (i > 0) put_alias_seq(", ");
-            put_alias_seq(p.stringof);
-            i++;
+            put_alias_seq((ReturnType!member).stringof, ' ', x, '(');
+            alias names = ParameterIdentifierTuple!member;
+            // alias names = AliasSeq!(ParameterIdentifierTuple!member);
+            foreach (i, p; Parameters!member)
+            {
+                if (i > 0) put_alias_seq(", ");
+                put_alias_seq(p.stringof);
+                static if (names[i] != "")
+                {
+                    put_alias_seq(" ", names[i]);
+                }
+            }
+            put_alias_seq(");\n");
         }
-        put_alias_seq(");\n");
     } else {
         static if (__traits(isTemplate, member)) {
             put_alias_seq("// template: ", member.stringof, ' ', x, ";\n");
