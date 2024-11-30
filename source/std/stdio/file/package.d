@@ -129,6 +129,7 @@ extern (C) int fputc(int c, FILE* stream)
 
 extern (C) size_t fwrite(const void* ptr, size_t size, size_t nitems, FILE* stream)
 {
+    stream = checkStdHandler(stream);
     if (size == 0)
     {
         return 0;
@@ -163,6 +164,7 @@ extern (C) size_t fwrite(const void* ptr, size_t size, size_t nitems, FILE* stre
 
 extern (C) size_t fread(void* ptr, size_t size, size_t nitems, FILE* stream)
 {
+    stream = checkStdHandler(stream);
     if (size == 0)
     {
         return 0;
