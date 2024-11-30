@@ -66,6 +66,19 @@ private void put_alias_seq(T...)(T args)
     foreach(m; args) profit(m);
 }
 
+template Unqualing(alias T)
+if(isPointer!T)
+{
+    alias Unqualed = Unqualing!(PointerTarget!T);
+    alias Unqualing = Unqualed*;
+}
+
+template Unqualing(alias T)
+if(!isPointer!T)
+{
+    alias Unqualing = Unqual!T;
+}
+
 /// Prints declaration of static function, struct, enum, union, variable or constant
 void show_meta_member(string x, alias member)()
 {
@@ -81,7 +94,7 @@ void show_meta_member(string x, alias member)()
             foreach (i, p; Parameters!member)
             {
                 if (i > 0) put_alias_seq(", ");
-                put_alias_seq(p.stringof);
+                put_alias_seq(Unqualing!(p).stringof);
                 static if (names[i] != "")
                 {
                     put_alias_seq(" ", names[i]);
