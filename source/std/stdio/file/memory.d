@@ -6,7 +6,7 @@ import nanoc.std.stdio.file;
 template FileInterface(alias A)
     if (A == File.Type.MEMORY_STREAM)
 {
-    int _fclose(File* f)
+    int close(File* f)
     {
         import nanoc.std.stdlib: _free;
         if (f.memory.callee_free)
@@ -17,7 +17,7 @@ template FileInterface(alias A)
         return 0;
     }
 
-    int _fputc(int c, FILE* stream)
+    int put(int c, FILE* stream)
     {
         FILE.Mem* memory = &stream.memory;
         long offset = memory.offset;
@@ -34,7 +34,7 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    int _fgetc(FILE* stream)
+    int get(FILE* stream)
     {
         FILE.Mem* memory = &stream.memory;
         long offset = memory.offset;
@@ -49,7 +49,7 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    fpos_t _seek(FILE *stream, fpos_t offset, int whence)
+    fpos_t seek(FILE *stream, fpos_t offset, int whence)
     {
         if (whence == SEEK_CUR)
         {
@@ -73,7 +73,7 @@ template FileInterface(alias A)
         return stream.memory.offset;
     }
 
-    int _write(FILE* stream, const void* data, size_t size)
+    int write(FILE* stream, const void* data, size_t size)
     {
         if (stream.memory.offset + size > stream.memory.size)
         {
@@ -87,7 +87,7 @@ template FileInterface(alias A)
         return cast(int) size;
     }
 
-    int _read(FILE* stream, void* data, size_t size)
+    int read(FILE* stream, void* data, size_t size)
     {
         if (stream.memory.offset + size > stream.memory.size)
         {

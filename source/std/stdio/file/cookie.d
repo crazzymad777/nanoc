@@ -49,7 +49,7 @@ FILE *fopencookie(void* cookie, const char* mode, cookie_io_functions_t io_funcs
 template FileInterface(alias A)
     if (A == File.Type.COOKIE)
 {
-    int _fclose(File* f)
+    int close(File* f)
     {
         import nanoc.std.stdlib: _free;
         int ret = 0;
@@ -61,7 +61,7 @@ template FileInterface(alias A)
         return ret;
     }
 
-    int _fgetc(FILE* stream)
+    int get(FILE* stream)
     {
         if (stream.cookie.readfn !is null)
         {
@@ -76,7 +76,7 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    int _fputc(int c, FILE* stream)
+    int put(int c, FILE* stream)
     {
         if (stream.cookie.writefn !is null)
         {
@@ -91,7 +91,7 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    fpos_t _seek(FILE *stream, fpos_t offset, int whence)
+    fpos_t seek(FILE *stream, fpos_t offset, int whence)
     {
         if (stream.cookie.seekfn !is null)
         {
@@ -100,7 +100,7 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    int _write(FILE* stream, const void* data, size_t size)
+    int write(FILE* stream, const void* data, size_t size)
     {
         if (stream.cookie.writefn !is null)
         {
@@ -110,7 +110,7 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    int _read(FILE* stream, void* data, size_t size)
+    int read(FILE* stream, void* data, size_t size)
     {
         if (stream.cookie.readfn !is null)
         {

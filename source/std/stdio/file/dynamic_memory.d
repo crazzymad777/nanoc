@@ -11,13 +11,13 @@ alias ParentInterface = nanoc.std.stdio.file.memory.FileInterface!(Alias!File.Ty
 template FileInterface(alias A)
     if (A == File.Type.DYNAMIC_MEMORY_STREAM)
 {
-    int _fclose(File* f)
+    int close(File* f)
     {
-        ParentInterface._fclose(f);
+        ParentInterface.close(f);
         return 0;
     }
 
-    int _fputc(int c, FILE* stream)
+    int put(int c, FILE* stream)
     {
         FILE.Mem* memory = &stream.memory;
         long offset = memory.offset;
@@ -31,18 +31,18 @@ template FileInterface(alias A)
             }
         }
 
-        return ParentInterface._fputc(c, stream);
+        return ParentInterface.put(c, stream);
     }
 
-    int _fgetc(FILE* stream)
+    int get(FILE* stream)
     {
-        return ParentInterface._fgetc(stream);
+        return ParentInterface.get(stream);
     }
 
-    fpos_t _seek(FILE *stream, fpos_t offset, int whence)
+    fpos_t seek(FILE *stream, fpos_t offset, int whence)
     {
         // Try seek regular memory stream
-        fpos_t result = ParentInterface._seek(stream, offset, whence);
+        fpos_t result = ParentInterface.seek(stream, offset, whence);
 
         if (result >= 0)
         {
@@ -65,7 +65,7 @@ template FileInterface(alias A)
         return -1;
     }
 
-    int _write(FILE* stream, const void* data, size_t size)
+    int write(FILE* stream, const void* data, size_t size)
     {
         auto offset = stream.memory.offset; // preserve prior offset
         stream.memory.offset += size;
@@ -74,12 +74,12 @@ template FileInterface(alias A)
             return EOF;
         }
 
-        return ParentInterface._write(stream, data, size);
+        return ParentInterface.write(stream, data, size);
     }
 
-    int _read(FILE* stream, void* data, size_t size)
+    int read(FILE* stream, void* data, size_t size)
     {
-        return ParentInterface._read(stream, data, size);
+        return ParentInterface.read(stream, data, size);
     }
 }
 

@@ -4,6 +4,7 @@ public import nanoc.std.stdio.file.dynamic_memory: open_memstream;
 public import nanoc.std.stdio.file.memory: fmemopen;
 public import nanoc.std.stdio.file.raw_fd: fopen;
 public import nanoc.std.stdio.file.core: FILE;
+import nanoc.std.stdio.file.core;
 import nanoc.std.stdio.common;
 
 /// Adorable alias
@@ -31,8 +32,6 @@ File* checkStdHandler(File* f)
     }
     return f;
 }
-
-import nanoc.std.stdio.file.core;
 
 /// Close stream
 extern (C) int fclose(FILE* f)
@@ -72,7 +71,7 @@ extern(C) int remove(const char* pathname)
     return unlink(pathname);
 }
 
-extern(C) long nanotell(FILE* stream)
+extern(C) long ftell(FILE* stream)
 {
     return nanotell(checkStdHandler(stream));
 }

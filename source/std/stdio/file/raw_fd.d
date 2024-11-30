@@ -6,10 +6,11 @@ import nanoc.std.stdio.file;
 template FileInterface(alias A)
     if (A == File.Type.OS)
 {
-    int _fclose(File* f)
+    int close(File* f)
     {
+        static import nanoc.std.stdio.common;
         import nanoc.std.stdlib: _free;
-        int r = close(f.raw_fd);
+        int r = nanoc.std.stdio.common.close(f.raw_fd);
         if (r < 0)
         {
             return EOF;
@@ -21,11 +22,12 @@ template FileInterface(alias A)
         return 0;
     }
 
-    int _fgetc(FILE* stream)
+    int get(FILE* stream)
     {
+        static import nanoc.std.stdio.common;
         import nanoc.os;
         char x;
-        long ret = read(stream.raw_fd, &x, 1);
+        long ret = nanoc.std.stdio.common.read(stream.raw_fd, &x, 1);
         if (ret > 0)
         {
             return cast(int) x;
@@ -42,12 +44,13 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    int _fputc(int c, FILE* stream)
+    int put(int c, FILE* stream)
     {
+        static import nanoc.std.stdio.common;
         import nanoc.os;
 
         char x = cast(char) c;
-        long ret = write(stream.raw_fd, &x, 1);
+        long ret = nanoc.std.stdio.common.write(stream.raw_fd, &x, 1);
         if (ret > 0)
         {
             return cast(int) x;
@@ -69,7 +72,7 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    fpos_t _seek(FILE *stream, fpos_t offset, int whence)
+    fpos_t seek(FILE *stream, fpos_t offset, int whence)
     {
         import nanoc.std.unistd: lseek;
         long ret = lseek(stream.raw_fd, offset, whence);
@@ -82,19 +85,21 @@ template FileInterface(alias A)
         return ret;
     }
 
-    int _write(FILE* stream, const void* data, size_t size)
+    int write(FILE* stream, const void* data, size_t size)
     {
+        static import nanoc.std.stdio.common;
         import nanoc.os;
 
-        long r = write(stream.raw_fd, cast(char*) data, size);
+        long r = nanoc.std.stdio.common.write(stream.raw_fd, cast(char*) data, size);
         return cast(int) r;
     }
 
-    int _read(FILE* stream, void* data, size_t size)
+    int read(FILE* stream, void* data, size_t size)
     {
+        static import nanoc.std.stdio.common;
         import nanoc.os;
 
-        long r = read(stream.raw_fd, cast(char*) data, size);
+        long r = nanoc.std.stdio.common.read(stream.raw_fd, cast(char*) data, size);
         return cast(int) r;
     }
 }

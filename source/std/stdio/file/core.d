@@ -75,7 +75,7 @@ int nanoclose(FILE* f)
     {
         if (f.type == x)
         {
-            return FileInterface!(Alias!x)._fclose(f);
+            return FileInterface!(Alias!x).close(f);
         }
     }
     return EOF;
@@ -87,7 +87,7 @@ int nanoputc(int c, FILE* stream)
     {
         if (stream.type == x)
         {
-            return FileInterface!(Alias!x)._fputc(c, stream);
+            return FileInterface!(Alias!x).put(c, stream);
         }
     }
     return EOF;
@@ -108,7 +108,7 @@ size_t nanowrite(const void* ptr, size_t size, size_t nitems, FILE* stream)
         {
             if (stream.type == x)
             {
-                int ret = FileInterface!(Alias!x)._write(stream, data, size);
+                int ret = FileInterface!(Alias!x).write(stream, data, size);
                 if (ret == size)
                 {
                     data += size;
@@ -139,7 +139,7 @@ size_t nanoread(void* ptr, size_t size, size_t nitems, FILE* stream)
         {
             if (stream.type == x)
             {
-                int ret = FileInterface!(Alias!x)._read(stream, data, size);
+                int ret = FileInterface!(Alias!x).read(stream, data, size);
                 if (ret == size)
                 {
                     data += size;
@@ -183,7 +183,7 @@ int nanogetc(FILE *stream)
     {
         if (stream.type == x)
         {
-            return FileInterface!(Alias!x)._fgetc(stream);
+            return FileInterface!(Alias!x).get(stream);
         }
     }
     return EOF;
@@ -195,7 +195,7 @@ long nanotell(FILE* stream)
     {
         if (stream.type == x)
         {
-            return FileInterface!(Alias!x)._seek(stream, 0, SEEK_CUR);
+            return FileInterface!(Alias!x).seek(stream, 0, SEEK_CUR);
         }
     }
     return -1;
@@ -207,7 +207,7 @@ int nanoseek(FILE *stream, long offset, int whence)
     {
         if (stream.type == x)
         {
-            return FileInterface!(Alias!x)._seek(stream, offset, whence) == -1 ? -1 : 0;
+            return FileInterface!(Alias!x).seek(stream, offset, whence) == -1 ? -1 : 0;
         }
     }
     return -1;
