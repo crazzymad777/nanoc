@@ -37,7 +37,7 @@ private void profit(char x)
         x = '_';
     }
     putchar(x);
-    //fsync(STDOUT_FILENO);
+    fssync(STDOUT_FILENO);
 }
 
 /// Print string
@@ -48,11 +48,13 @@ private void profit(string y)
         foreach (x; y)
         {
             profit(x);
+            fssync(STDOUT_FILENO);
         }
     }
     else
     {
         puts(y.ptr);
+        fssync(STDOUT_FILENO);
     }
 }
 
