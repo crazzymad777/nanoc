@@ -33,6 +33,7 @@ template Footprint()
         immutable ModuleDescriptor("nanoc.sys.wait", "sys/wait.h"),
         immutable ModuleDescriptor("nanoc.std.ctype", "ctype.h"),
         immutable ModuleDescriptor("nanoc.std.errno", "errno.h"),
+        immutable ModuleDescriptor("nanoc.std.stdarg", "stdarg.h"),
         immutable ModuleDescriptor("nanoc.sys.stat", "sys/stat.h"),
         immutable ModuleDescriptor("nanoc.os", "sys/syscall.h")
     );
