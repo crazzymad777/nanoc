@@ -66,7 +66,7 @@ template Footprint()
         close(STDOUT_FILENO);
         foreach(mod; descriptors)
         {
-            int fd = open( cast(const char*)("includes/" ~ mod.header).ptr, O_WRONLY | O_CREAT, std.conv.octal!"0644");
+            int fd = open( cast(const char*)("includes/" ~ mod.header).ptr, O_WRONLY | O_CREAT | O_TRUNC, std.conv.octal!"0644");
             fcntl(fd, F_DUPFD, STDOUT_FILENO);
             show_meta_module!(mod.name, mod.header, mod.name)();
             close(fd);
