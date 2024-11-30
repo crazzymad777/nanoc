@@ -1,4 +1,4 @@
-module nanoc.meta.mine;
+module nanoc.meta.show;
 
 import nanoc.meta;
 

@@ -41,7 +41,7 @@ template Footprint()
     void build()
     {
         import nanoc.std.stdio;
-        import nanoc.meta.mine;
+        import nanoc.meta.show;
         import std.traits;
 
 
@@ -55,7 +55,7 @@ template Footprint()
     {
         static import std.conv;
         import nanoc.std.stdio;
-        import nanoc.meta.mine;
+        import nanoc.meta.show;
         import nanoc.fcntl;
         import std.traits;
 
