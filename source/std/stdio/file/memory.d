@@ -133,17 +133,17 @@ template FileInterface(alias A)
 
     int _read(FILE* stream, void* data, size_t size)
     {
-        auto offset = stream.memory.offset;
-        auto result = fseek(stream, size, SEEK_CUR);
-        byte* start = cast(byte*) stream.memory.data_ptr;
-        if (result == 0 || (result == EOF && stream.memory.size == stream.memory.offset))
+        if (stream.memory.offset + size > stream.memory.size)
         {
-            import nanoc.std.string: memcpy;
-            memcpy(data, start + offset, size);
-            return cast(int) size;
+            // read zeroes for dynamic stream?
+            return EOF;
         }
-        fseek(stream, -size, SEEK_CUR);
-        return EOF;
+
+        auto offset = stream.memory.offset;
+        byte* start = cast(byte*) stream.memory.data_ptr;
+        import nanoc.std.string: memcpy;
+        memcpy(data, start + offset, size);
+        return cast(int) size;
     }
 }
 
