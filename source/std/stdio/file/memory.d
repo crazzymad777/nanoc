@@ -33,13 +33,17 @@ template FileInterface(alias A)
         // Dynamic size
         static if (A == File.Type.DYNAMIC_MEMORY_STREAM)
         {
-            auto result = fseek(stream, 0, SEEK_CUR);
-            if (result >= 0)
+            if (stream.memory.offset >= stream.memory.size)
             {
-                char* buf = cast(char*) memory.data_ptr;
-                buf[offset] = x;
                 memory.offset++;
-                return x;
+                if (realloc_dynamic_stream_buffer(stream))
+                {
+                    char* buf = cast(char*) memory.data_ptr;
+                    buf[offset] = x;
+                    // memory.offset++;
+                    return x;
+                }
+                memory.offset--;
             }
         }
 
@@ -90,19 +94,8 @@ template FileInterface(alias A)
             // Dynamic size, fill nulls
             static if (A == File.Type.DYNAMIC_MEMORY_STREAM)
             {
-                import nanoc.std.stdlib: realloc;
-                import nanoc.std.string: memset;
-                auto surplus = stream.memory.offset+1-stream.memory.size;
-                byte* ptr = cast(byte*) realloc(stream.memory.data_ptr, stream.memory.size + surplus);
-                if (ptr !is null)
+                if (realloc_dynamic_stream_buffer(stream))
                 {
-                    byte* end = ptr + stream.memory.size;
-                    memset(end, 0, surplus);
-
-                    stream.memory.data_ptr = ptr;
-                    stream.memory.size = stream.memory.size + surplus;
-                    *(stream.memory.dynamic_data) = cast(void**) stream.memory.data_ptr;
-                    *(stream.memory.dynamic_size) = stream.memory.size;
                     return stream.memory.offset;
                 }
             }
@@ -115,17 +108,32 @@ template FileInterface(alias A)
 
     int _write(FILE* stream, const void* data, size_t size)
     {
-        auto offset = stream.memory.offset;
-        auto result = fseek(stream, size, SEEK_CUR);
-        byte* start = cast(byte*) stream.memory.data_ptr;
-        if (result == 0 || (result == EOF && stream.memory.size == stream.memory.offset))
+        if (stream.memory.offset + size > stream.memory.size)
         {
-            import nanoc.std.string: memcpy;
-            memcpy(start + offset, data, size);
-            return cast(int) size;
+            static if (A == File.Type.MEMORY_STREAM)
+            {
+                return EOF;
+            }
+            static if (A == File.Type.DYNAMIC_MEMORY_STREAM)
+            {
+                stream.memory.offset += size;
+                if (realloc_dynamic_stream_buffer(stream))
+                {
+                    stream.memory.offset -= size;
+                }
+                else
+                {
+                    stream.memory.offset -= size;
+                    return EOF;
+                }
+            }
         }
-        fseek(stream, -size, SEEK_CUR);
-        return EOF;
+
+        auto offset = stream.memory.offset;
+        byte* start = cast(byte*) stream.memory.data_ptr;
+        import nanoc.std.string: memcpy;
+        memcpy(start + offset, data, size);
+        return cast(int) size;
     }
 
     int _read(FILE* stream, void* data, size_t size)
@@ -212,6 +220,26 @@ extern (C) FILE *open_memstream(char **ptr, size_t *sizeloc)
         return f;
     }
     return null;
+}
+
+private bool realloc_dynamic_stream_buffer(FILE* stream)
+{
+    import nanoc.std.stdlib: realloc;
+    import nanoc.std.string: memset;
+    auto surplus = stream.memory.offset+1-stream.memory.size;
+    byte* ptr = cast(byte*) realloc(stream.memory.data_ptr, stream.memory.size + surplus);
+    if (ptr !is null)
+    {
+        byte* end = ptr + stream.memory.size;
+        memset(end, 0, surplus);
+
+        stream.memory.data_ptr = ptr;
+        stream.memory.size = stream.memory.size + surplus;
+        *(stream.memory.dynamic_data) = cast(void**) stream.memory.data_ptr;
+        *(stream.memory.dynamic_size) = stream.memory.size;
+        return true;
+    }
+    return false;
 }
 
 unittest
