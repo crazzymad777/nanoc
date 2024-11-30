@@ -69,27 +69,6 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    int _fputs(const char* s, FILE* stream)
-    {
-        import nanoc.std.string: strlen;
-        import nanoc.os;
-
-        size_t size = strlen(s);
-        long r = write(stream.raw_fd, s, size);
-
-        if (r == 0 && size != 0)
-        {
-            return EOF;
-        }
-
-        if (r >= 0)
-        {
-            return cast(int) r;
-        }
-        // inherits error or EOF possibly
-        return EOF;
-    }
-
     fpos_t _seek(FILE *stream, fpos_t offset, int whence)
     {
         import nanoc.std.unistd: lseek;

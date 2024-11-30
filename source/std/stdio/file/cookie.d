@@ -91,16 +91,6 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    int _fputs(const char* s, FILE* stream)
-    {
-        if (stream.cookie.writefn !is null)
-        {
-            import nanoc.std.string: strlen;
-            return stream.cookie.writefn(cast(void*)stream.cookie.user_data, s, cast(int) strlen(s));
-        }
-        return EOF;
-    }
-
     fpos_t _seek(FILE *stream, fpos_t offset, int whence)
     {
         if (stream.cookie.seekfn !is null)
