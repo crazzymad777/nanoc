@@ -36,14 +36,13 @@ template FileInterface(alias A)
             if (stream.memory.offset >= stream.memory.size)
             {
                 memory.offset++;
-                if (realloc_dynamic_stream_buffer(stream))
+                if (realloc_dynamic_stream_buffer(stream, offset))
                 {
                     char* buf = cast(char*) memory.data_ptr;
                     buf[offset] = x;
-                    // memory.offset++;
+                    memory.offset++;
                     return x;
                 }
-                memory.offset--;
             }
         }
 
@@ -94,7 +93,7 @@ template FileInterface(alias A)
             // Dynamic size, fill nulls
             static if (A == File.Type.DYNAMIC_MEMORY_STREAM)
             {
-                if (realloc_dynamic_stream_buffer(stream))
+                if (realloc_dynamic_stream_buffer(stream, stream.memory.offset))
                 {
                     return stream.memory.offset;
                 }
@@ -116,14 +115,10 @@ template FileInterface(alias A)
             }
             static if (A == File.Type.DYNAMIC_MEMORY_STREAM)
             {
+                auto offset = stream.memory.offset; // preserve prior offset
                 stream.memory.offset += size;
-                if (realloc_dynamic_stream_buffer(stream))
+                if (!realloc_dynamic_stream_buffer(stream, offset))
                 {
-                    stream.memory.offset -= size;
-                }
-                else
-                {
-                    stream.memory.offset -= size;
                     return EOF;
                 }
             }
@@ -222,7 +217,7 @@ extern (C) FILE *open_memstream(char **ptr, size_t *sizeloc)
     return null;
 }
 
-private bool realloc_dynamic_stream_buffer(FILE* stream)
+private bool realloc_dynamic_stream_buffer(FILE* stream, fpos_t setOffset)
 {
     import nanoc.std.stdlib: realloc;
     import nanoc.std.string: memset;
@@ -237,8 +232,10 @@ private bool realloc_dynamic_stream_buffer(FILE* stream)
         stream.memory.size = stream.memory.size + surplus;
         *(stream.memory.dynamic_data) = cast(void**) stream.memory.data_ptr;
         *(stream.memory.dynamic_size) = stream.memory.size;
+        stream.memory.offset = setOffset;
         return true;
     }
+    stream.memory.offset = setOffset;
     return false;
 }
 
