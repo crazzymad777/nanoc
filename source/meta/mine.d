@@ -164,7 +164,7 @@ void show_meta_module(string M, string H, string G)()
         }
         else
         {
-            static if (!hasUDA!(member, "metaomit"))
+            static if (__traits(isTemplate, member) || !hasUDA!(member, "metaomit"))
             {
                 show_meta_member!(x, member)();
             }
