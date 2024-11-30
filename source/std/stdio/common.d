@@ -45,7 +45,9 @@ extern(C) int puts(const char *str)
 {
     import nanoc.os: StringBuffer;
     import nanoc.os: swrite_sb;
-    return cast(int) swrite_sb(OS_STDOUT_FILENO, StringBuffer(str, -1));
+    auto r = swrite_sb(OS_STDOUT_FILENO, StringBuffer(str, -1));
+    putchar(10);
+    return cast(int) r;
 }
 
 extern(C) int putchar(int octet)
