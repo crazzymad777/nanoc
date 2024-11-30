@@ -193,28 +193,51 @@ extern (C) size_t fread(void* ptr, size_t size, size_t nitems, FILE* stream)
     return nitems - n;
 }
 
+/// Returns strlen(s) on success
 extern (C) int fputs(const char* s, FILE* stream)
 {
     stream = checkStdHandler(stream);
 
-    if (stream.type == File.Type.OS)
+    import nanoc.std.string: strlen;
+    import nanoc.os;
+
+    size_t size = strlen(s);
+    long r = fwrite(cast(void*) s, 1, size, stream);
+
+    if (r == 0 && size != 0)
     {
-        import std.meta;
-        return FileInterface!(Alias!File.Type.OS)._fputs(s, stream);
+        return EOF;
     }
 
-    // Generic implementation
-    int i = 0;
-    while (s[i] != '\0')
+    if (r >= 0)
     {
-        int r = fputc(s[i], stream);
-        if (r == EOF)
-        {
-            return EOF;
-        }
-        i++;
+        return cast(int) r;
     }
-    return i;
+    // inherits error or EOF possibly
+    return EOF;
+
+    // if (stream.type == File.Type.OS)
+    // {
+    //     import std.meta;
+    //     return FileInterface!(Alias!File.Type.OS)._fputs(s, stream);
+    // }
+    //
+    // // Generic implementation
+    // int i = 0;
+    // while (s[i] != '\0')
+    // {
+    //     int r = fputc(s[i], stream);
+    //     if (r == EOF)
+    //     {
+    //         if (i == 0)
+    //         {
+    //             return EOF;
+    //         }
+    //         return i;
+    //     }
+    //     i++;
+    // }
+    // return i;
 }
 
 extern (C) int fgetc(FILE *stream)

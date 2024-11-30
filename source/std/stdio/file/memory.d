@@ -62,7 +62,12 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    int _fseek(FILE *stream, long offset, int whence)
+    int _fseek(FILE *stream, fpos_t offset, int whence)
+    {
+        return _seek(stream, offset, whence) == -1 ? -1 : 0;
+    }
+
+    fpos_t _seek(FILE *stream, fpos_t offset, int whence)
     {
         if (whence == SEEK_CUR)
         {
@@ -103,14 +108,14 @@ template FileInterface(alias A)
                     stream.memory.size = stream.memory.size + surplus;
                     *(stream.memory.dynamic_data) = cast(void**) stream.memory.data_ptr;
                     *(stream.memory.dynamic_size) = stream.memory.size;
-                    return 0;
+                    return stream.memory.offset;
                 }
             }
 
             stream.eof = true;
             return -1;
         }
-        return 0;
+        return stream.memory.offset;
     }
 
     long _ftell(FILE* stream)
