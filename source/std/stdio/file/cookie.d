@@ -101,21 +101,11 @@ template FileInterface(alias A)
         return EOF;
     }
 
-    int _fseek(FILE *stream, long offset, int whence)
+    fpos_t _seek(FILE *stream, fpos_t offset, int whence)
     {
         if (stream.cookie.seekfn !is null)
         {
-            return cast(int) stream.cookie.seekfn(cast(void*)stream.cookie.user_data, cast(fpos_t) offset, whence);
-        }
-        return EOF;
-    }
-
-    long _ftell(FILE *stream)
-    {
-        if (stream.cookie.seekfn !is null)
-        {
-            // I believe It should work
-            return stream.cookie.seekfn(cast(void*)stream.cookie.user_data, 0, SEEK_CUR);
+            return stream.cookie.seekfn(cast(void*)stream.cookie.user_data, cast(fpos_t) offset, whence);
         }
         return EOF;
     }

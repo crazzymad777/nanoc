@@ -215,29 +215,6 @@ extern (C) int fputs(const char* s, FILE* stream)
     }
     // inherits error or EOF possibly
     return EOF;
-
-    // if (stream.type == File.Type.OS)
-    // {
-    //     import std.meta;
-    //     return FileInterface!(Alias!File.Type.OS)._fputs(s, stream);
-    // }
-    //
-    // // Generic implementation
-    // int i = 0;
-    // while (s[i] != '\0')
-    // {
-    //     int r = fputc(s[i], stream);
-    //     if (r == EOF)
-    //     {
-    //         if (i == 0)
-    //         {
-    //             return EOF;
-    //         }
-    //         return i;
-    //     }
-    //     i++;
-    // }
-    // return i;
 }
 
 extern (C) int fgetc(FILE *stream)
@@ -272,7 +249,7 @@ extern(C) long ftell(FILE* stream)
     {
         if (stream.type == x)
         {
-            return FileInterface!(Alias!x)._ftell(stream);
+            return FileInterface!(Alias!x)._seek(stream, 0, SEEK_CUR);
         }
     }
     return -1;
@@ -292,7 +269,7 @@ extern(C) int fseek(FILE *stream, long offset, int whence)
     {
         if (stream.type == x)
         {
-            return FileInterface!(Alias!x)._fseek(stream, offset, whence);
+            return FileInterface!(Alias!x)._seek(stream, offset, whence) == -1 ? -1 : 0;
         }
     }
     return -1;
