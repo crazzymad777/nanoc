@@ -25,5 +25,7 @@ else
             footprint_all();
             return;
         }
+
+        footprint_module(cast(char*) ptr);
     }
 }

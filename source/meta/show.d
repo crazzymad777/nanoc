@@ -91,6 +91,7 @@ void show_meta_member(string x, alias member)()
             put_alias_seq((ReturnType!member).stringof, ' ', x, '(');
             alias names = ParameterIdentifierTuple!member;
             // alias names = AliasSeq!(ParameterIdentifierTuple!member);
+            int n = 0;
             foreach (i, p; Parameters!member)
             {
                 if (i > 0) put_alias_seq(", ");
@@ -99,7 +100,13 @@ void show_meta_member(string x, alias member)()
                 {
                     put_alias_seq(" ", names[i]);
                 }
+                n++;
             }
+            // static if (variadicFunctionStyle!member == Variadic.c)
+            // {
+            //     if (n > 0) put_alias_seq(", ");
+            //     put_alias_seq("...");
+            // }
             put_alias_seq(");\n");
         }
     } else {
