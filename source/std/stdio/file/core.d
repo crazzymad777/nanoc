@@ -2,9 +2,10 @@ module nanoc.std.stdio.file.core;
 
 import nanoc.std.stdio.common;
 import nanoc.std.stdio.file;
+import nanoc.meta: Omit;
 
 /// Internal struct for File
-struct FILE {
+@Omit struct FILE {
     /// Define implementation of File template interface (template FileInterface(alias A))
     enum Type {
         OS = 1,

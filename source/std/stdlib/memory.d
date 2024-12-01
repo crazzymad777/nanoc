@@ -51,6 +51,7 @@ struct MemoryBlock
 	byte[0] data;
 }
 
+@Omit
 __gshared SuperMemoryBlock* beginSuperBlock = null;
 
 extern(C)
