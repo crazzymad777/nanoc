@@ -185,7 +185,7 @@ void show_meta_module(string M, string H, string G)()
     {
         put_alias_seq("#ifndef NANOC_MODULE_", StreamModificator.TRANSLATE, H, StreamModificator.NONE, "\n");
         put_alias_seq("#define NANOC_MODULE_", StreamModificator.TRANSLATE, H, StreamModificator.NONE, "\n");
-        static if (M != "nanoc/defs.h")
+        static if (M != "nanoc.defs")
         {
             put_alias_seq("#include <nanoc/defs.h>\n");
         }
