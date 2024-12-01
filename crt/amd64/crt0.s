@@ -4,19 +4,26 @@
 
 .global _start
 _start:
+	# Setup a stack
 	mov RBP, 0
 	push RBP
 	push RBP
 	mov RBP, RSP
 
-	push RSI
-	push RDI
-	call __nanoc_init
-	call _init
+	push RDI # argc
+	push RSI # argv
+	push RDX # envp + aux
+	call __nanoc_init # libc init
+	call _init # program init
 
-	pop RDI
+	# restore registers
+	pop RDX
 	pop RSI
+	pop RDI
+
+	# Give control to program
 	call __nanoc_main
 
+	# Terminate process
 	mov EDI, EAX
 	call exit
