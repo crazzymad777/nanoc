@@ -9,6 +9,9 @@ struct SetKey
     string name;
 }
 
+enum Nake;
+enum Omit;
+
 version (DISABLE_METADATA)
 {
 }

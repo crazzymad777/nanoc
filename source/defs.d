@@ -1,7 +1,5 @@
 module nanoc.defs;
 
-import nanoc.meta: SetKey;
+import nanoc.meta: SetKey, Nake;
 
-@SetKey("ulong")
-@"metanake"
-enum _ulong = "unsigned long";
+@SetKey("ulong") @Nake enum _ulong = "unsigned long";

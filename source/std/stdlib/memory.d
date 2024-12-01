@@ -2,6 +2,8 @@ module nanoc.std.stdlib.memory;
 
 public import nanoc.std.stdlib.naive: realloc;
 
+import nanoc.meta: Omit;
+
 // Super memory block must have field, head & tail
 // Super memory block contains other memory blocks
 struct SuperMemoryBlock
@@ -53,7 +55,7 @@ __gshared SuperMemoryBlock* beginSuperBlock = null;
 
 extern(C)
 @("mmap_wrapper")
-@("metaomit")
+@Omit
 MemoryBlock* _allocate_primary_memory_block(size_t size)
 {
     import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
@@ -75,7 +77,7 @@ MemoryBlock* _allocate_primary_memory_block(size_t size)
 
 extern(C)
 @("mmap_wrapper")
-@("metaomit")
+@Omit
 SuperMemoryBlock* _init_super_block(size_t size)
 {
     import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
@@ -96,7 +98,7 @@ SuperMemoryBlock* _init_super_block(size_t size)
     return null;
 }
 
-@("metaomit")
+@Omit
 void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
 {
     alias HEAD_BLOCK_POINTER = MemoryBlock.HEAD_BLOCK_POINTER;
@@ -116,7 +118,7 @@ void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
     tail.head = &superblock.head;
 }
 
-@("metaomit")
+@Omit
 MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
 {
     if (superblock is null) return null;
@@ -197,7 +199,7 @@ extern (C) void* malloc(size_t size)
     return null;
 }
 
-@("metaomit")
+@Omit
 void unclaim_single_memory_block(MemoryBlock* single_block)
 {
     alias CLAIMED = MemoryBlock.MemoryBlockFlagsOffset.CLAIMED;
@@ -205,7 +207,7 @@ void unclaim_single_memory_block(MemoryBlock* single_block)
     single_block.flags = flags & ~(1uL << CLAIMED);
 }
 
-@("metaomit")
+@Omit
 size_t unclaim_memory_block(MemoryBlock* entry_block, MemoryBlock* block)
 {
     unclaim_single_memory_block(block);

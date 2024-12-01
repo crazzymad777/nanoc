@@ -1,8 +1,9 @@
 module nanoc.std.stdio.format.utils;
 
 import nanoc.std.stdio.file;
+import nanoc.meta: Omit;
 
-@("metaomit")
+@Omit
 int fprint_signed_int(FILE* stream, int value)
 {
     int nbytes = 0;
@@ -19,7 +20,7 @@ int fprint_signed_int(FILE* stream, int value)
     return nbytes + fprint_unsigned_int(stream, x);
 }
 
-@("metaomit")
+@Omit
 int fprint_unsigned_int(FILE* stream, uint value)
 {
     int nbytes = 0;
