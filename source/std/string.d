@@ -74,6 +74,11 @@ extern(C) int strcmp(const (char)* s1, const (char)* s2)
     return s1[i] - s2[i];
 }
 
+unittest
+{
+    assert(strcmp("1", "2") != 0);
+}
+
 /// Compares two memory area
 extern(C) int memcmp(const (byte)* s1, const (byte)* s2, size_t n)
 {
