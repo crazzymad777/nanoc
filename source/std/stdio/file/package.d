@@ -11,9 +11,15 @@ import nanoc.std.stdio.common;
 alias File = FILE;
 alias fpos_t = long;
 
-__gshared File fstdin = {type: File.Type.OS, raw_fd: STDIN_FILENO, prealloc: true};
-__gshared File fstdout = {type: File.Type.OS, raw_fd: STDOUT_FILENO, prealloc: true};
-__gshared File fstderr = {type: File.Type.OS, raw_fd: STDERR_FILENO, prealloc: true};
+import nanoc.meta;
+
+@Omit __gshared File fstdin = {type: File.Type.OS, raw_fd: STDIN_FILENO, prealloc: true};
+@Omit __gshared File fstdout = {type: File.Type.OS, raw_fd: STDOUT_FILENO, prealloc: true};
+@Omit __gshared File fstderr = {type: File.Type.OS, raw_fd: STDERR_FILENO, prealloc: true};
+
+__gshared File* stdin = &fstdin;
+__gshared File* stdout = &fstdout;
+__gshared File* stderr = &fstderr;
 
 /// Return preallocated File* if standard handler
 File* checkStdHandler(File* f)
