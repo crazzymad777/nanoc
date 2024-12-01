@@ -55,16 +55,31 @@ template Footprint()
         immutable ModuleDescriptor("nanoc.sys.stat", "sys/stat.h"),
     );
 
-    void build()
+    void show()
     {
         import nanoc.std.stdio;
         import nanoc.meta.show;
         import std.traits;
 
-
         foreach(mod; descriptors)
         {
             show_meta_module!(mod.name, mod.header, mod.name)();
+        }
+    }
+
+    void show_module(char* modulename)
+    {
+        import nanoc.std.string;
+        import nanoc.std.stdio;
+        import nanoc.meta.show;
+        import std.traits;
+
+        foreach(mod; descriptors)
+        {
+            if (strcmp(mod.name, modulename) == 0)
+            {
+                show_meta_module!(mod.name, mod.header, mod.name)();
+            }
         }
     }
 
@@ -94,14 +109,17 @@ template Footprint()
 
 void footprint()
 {
-    Footprint!().write_modules();;
-    //
+    Footprint!().write_modules();
+}
+
+void footprint_module(char* name)
+{
+    Footprint!().show_module(name);
 }
 
 void footprint_all()
 {
-    Footprint!().build();;
-    //
+    Footprint!().show();
 }
 
 }
