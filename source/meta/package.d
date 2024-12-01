@@ -4,6 +4,10 @@ import std.meta;
 
 //version = DISABLE_METADATA;
 
+struct SetKey
+{
+    string name;
+}
 
 version (DISABLE_METADATA)
 {
@@ -25,6 +29,7 @@ struct ModuleDescriptor
 template Footprint()
 {
     alias descriptors = AliasSeq!(
+        immutable ModuleDescriptor("nanoc.defs", "nanocdefs.h"),
         immutable ModuleDescriptor("nanoc.std.string", "string.h"),
         immutable ModuleDescriptor("nanoc.std.stdlib", "stdlib.h"),
         immutable ModuleDescriptor("nanoc.std.stdio", "stdio.h"),
