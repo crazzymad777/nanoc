@@ -121,7 +121,7 @@ void show_meta_member(string x, alias member)()
                     }
                     else static if (is(T == struct))
                     {
-                        put_alias_seq("struct ", member.stringof, " {};\n");
+                        put_alias_seq("typedef struct {} ", member.stringof, ";\n");
                     }
                     else static if (is(T == union))
                     {
@@ -193,6 +193,13 @@ void show_meta_module(string M, string H, string G)()
             foreach(mod; member)
             {
                 show_meta_module!(M ~ "." ~ mod, H, G)();
+            }
+        }
+        else static if (x == "Includes")
+        {
+            foreach (file; member)
+            {
+                put_alias_seq("#include <", file, ">\n");
             }
         }
         else
