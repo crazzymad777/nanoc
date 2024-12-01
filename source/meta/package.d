@@ -9,6 +9,7 @@ struct SetKey
     string name;
 }
 
+enum Typedef;
 enum Nake;
 enum Omit;
 

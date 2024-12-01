@@ -155,7 +155,14 @@ void show_meta_member(string x, alias member)()
                     else
                         const key = x;
 
-                    put_alias_seq("#define ", key, " ", value, "\n");
+                    static if (hasUDA!(member, Typedef))
+                    {
+                        put_alias_seq("typedef ", value, " ", key, ";\n");
+                    }
+                    else
+                    {
+                        put_alias_seq("#define ", key, " ", value, "\n");
+                    }
                 }
             }
         }

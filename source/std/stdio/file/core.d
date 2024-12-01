@@ -5,7 +5,7 @@ import nanoc.std.stdio.file;
 import nanoc.meta: Omit;
 
 /// Internal struct for File
-@Omit struct FILE {
+struct FILE {
     /// Define implementation of File template interface (template FileInterface(alias A))
     enum Type {
         OS = 1,
