@@ -15,6 +15,15 @@ enum Omit;
 
 version (DISABLE_METADATA)
 {
+    extern(C) int metadata_version()
+    {
+        return -1;
+    }
+
+    extern(C) void metadata_query(void* ptr)
+    {
+
+    }
 }
 else
 {
@@ -33,7 +42,7 @@ struct ModuleDescriptor
 template Footprint()
 {
     alias descriptors = AliasSeq!(
-        immutable ModuleDescriptor("nanoc.defs", "nanocdefs.h"),
+        immutable ModuleDescriptor("nanoc.defs", "nanoc/defs.h"),
         immutable ModuleDescriptor("nanoc.std.string", "string.h"),
         immutable ModuleDescriptor("nanoc.std.stdlib", "stdlib.h"),
         immutable ModuleDescriptor("nanoc.std.stdio", "stdio.h"),
@@ -69,6 +78,7 @@ template Footprint()
         import nanoc.sys.stat: mkdir;
         mkdir("includes", std.conv.octal!"0755");
         mkdir("includes/sys", std.conv.octal!"0755");
+        mkdir("includes/nanoc", std.conv.octal!"0755");
 
         close(STDOUT_FILENO);
         foreach(mod; descriptors)
@@ -91,6 +101,26 @@ void footprint_all()
 {
     Footprint!().build();;
     //
+}
+
+extern(C) int metadata_version()
+{
+    return 0;
+}
+
+extern(C) void metadata_query(void* ptr)
+{
+    if (ptr == cast(void*) 1)
+    {
+        footprint();
+        return;
+    }
+
+    if (ptr == cast(void*) 2)
+    {
+        footprint_all();
+        return;
+    }
 }
 
 }
