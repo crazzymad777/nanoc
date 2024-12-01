@@ -30,7 +30,7 @@ void* memset(void* s, int c, size_t n)
 }
 
 extern(C)
-void* memcpy(void* dest, const void* src, size_t n)
+void* memcpy(void* dest, const(void)* src, size_t n)
 {
     char* dest_buffer = cast(char*) dest;
     char* src_buffer = cast(char*) src;
@@ -63,7 +63,7 @@ unittest
 }
 
 /// Compares two strings
-extern(C) int strcmp(const char *s1, const char *s2)
+extern(C) int strcmp(const (char)* s1, const (char)* s2)
 {
     int i = 0;
     while (s1[i] != '\0' && s2[i] != '\0')
@@ -75,7 +75,7 @@ extern(C) int strcmp(const char *s1, const char *s2)
 }
 
 /// Compares two memory area
-extern(C) int memcmp(const byte* s1, const byte* s2, size_t n)
+extern(C) int memcmp(const (byte)* s1, const (byte)* s2, size_t n)
 {
     for (int i = 0; i < n; i++)
     {
