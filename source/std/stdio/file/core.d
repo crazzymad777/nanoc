@@ -162,7 +162,7 @@ int nanoputs(const char* s, FILE* stream)
     import nanoc.os;
 
     size_t size = strlen(s);
-    long r = fwrite(cast(void*) s, 1, size, stream);
+    long r = nanowrite(cast(void*) s, 1, size, stream);
 
     if (r == 0 && size != 0)
     {

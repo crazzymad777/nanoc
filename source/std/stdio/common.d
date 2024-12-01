@@ -43,31 +43,18 @@ extern (C) size_t read(int fd, char* buf, size_t count)
 
 extern(C) int puts(const char *str)
 {
-    import nanoc.os: StringBuffer;
-    import nanoc.os: swrite_sb;
-    auto r = swrite_sb(OS_STDOUT_FILENO, StringBuffer(str, -1));
-    // putchar(10);
-    return cast(int) r;
+    import nanoc.std.stdio.file: File, fputs;
+    return fputs(str, cast(File*) STDOUT_FILENO);
 }
 
 extern(C) int putchar(int octet)
 {
-    import nanoc.os: swrite_single;
-    int r = swrite_single(OS_STDOUT_FILENO, cast(char) octet);
-    if (r == OS_EOF)
-    {
-        return EOF;
-    }
-    return cast(char) octet;
+    import nanoc.std.stdio.file: File, fputc;
+    return fputc(octet, cast(File*) STDOUT_FILENO);
 }
 
 extern(C) int getchar()
 {
-    import nanoc.os: swrite_single;
-    int r = sread_single(OS_STDIN_FILENO);
-    if (r == OS_EOF)
-    {
-        return EOF;
-    }
-    return cast(char) r;
+    import nanoc.std.stdio.file: File, fgetc;
+    return fgetc(cast(File*) STDOUT_FILENO);
 }

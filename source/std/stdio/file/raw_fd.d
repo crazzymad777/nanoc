@@ -91,6 +91,14 @@ template FileInterface(alias A)
         import nanoc.os;
 
         long r = nanoc.std.stdio.common.write(stream.raw_fd, cast(char*) data, size);
+        if (r != size)
+        {
+            if (fssync(stream.raw_fd) == 0)
+            {
+                return cast(int) size;
+            }
+            return cast(int) r;
+        }
         return cast(int) r;
     }
 
