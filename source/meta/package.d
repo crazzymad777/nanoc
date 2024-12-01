@@ -43,6 +43,7 @@ template Footprint()
 {
     alias descriptors = AliasSeq!(
         immutable ModuleDescriptor("nanoc.defs", "nanoc/defs.h"),
+        immutable ModuleDescriptor("nanoc.meta.external", "nanoc/metadata.h"),
         immutable ModuleDescriptor("nanoc.std.string", "string.h"),
         immutable ModuleDescriptor("nanoc.std.stdlib", "stdlib.h"),
         immutable ModuleDescriptor("nanoc.std.stdio", "stdio.h"),
@@ -101,26 +102,6 @@ void footprint_all()
 {
     Footprint!().build();;
     //
-}
-
-extern(C) int metadata_version()
-{
-    return 0;
-}
-
-extern(C) void metadata_query(void* ptr)
-{
-    if (ptr == cast(void*) 1)
-    {
-        footprint();
-        return;
-    }
-
-    if (ptr == cast(void*) 2)
-    {
-        footprint_all();
-        return;
-    }
 }
 
 }
