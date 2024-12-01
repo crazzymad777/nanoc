@@ -1,7 +1,5 @@
 module nanoc.thread;
 
-import nanoc.elf;
-
 version (X86_64)
 {
     import nanoc.thread.amd64;
@@ -33,8 +31,6 @@ struct StaticThreadLocalStorage
     size_t pad;
     size_t memory;
     size_t size;
-
-    void* fake;
 }
 
 // Trigger ld
