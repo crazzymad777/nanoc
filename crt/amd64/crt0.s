@@ -6,9 +6,14 @@
 _start:
 	# Setup a stack
 	mov RBP, 0
-	push RBP
-	push RBP
-	mov RBP, RSP
+	# push RBP
+	# push RBP
+	# mov RBP, RSP
+
+	# Transfer args from stack to registers
+	mov RDI, [RSP]
+	lea RSI, [RSP+8]
+	lea RDX, [RSP+RDI*8 + 0x10]
 
 	push RDI # argc
 	push RSI # argv
