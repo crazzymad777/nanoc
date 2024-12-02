@@ -21,6 +21,8 @@ extern (C)
         pexit(status);
     }
 
+    __gshared char** environ = null;
+
     void* calloc(size_t nmemb, size_t size)
     {
         import nanoc.std.string: memset;

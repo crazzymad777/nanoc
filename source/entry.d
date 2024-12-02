@@ -4,6 +4,7 @@ extern(C)
 {
     void __nanoc_init(int argc, char** argv, char **envp)
     {
+        import nanoc.std.stdlib: environ;
         import nanoc.elf;
         ulong[NANOC_AT_MAX] _aux;
 
@@ -18,6 +19,7 @@ extern(C)
                 _aux[auxv[i]] = auxv[i+1];
             }
         }
+        environ = envp;
     }
 
     int main(int argc, char** argv, char** envp);
