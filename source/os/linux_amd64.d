@@ -47,6 +47,7 @@ alias pid_t = int;
 alias id_t = int;
 alias idtype_t = int;
 enum P_ALL = 0;
+enum P_PID = 1;
 enum WEXITED = 0x00000004;
 
 noreturn pexit(int status)
@@ -193,6 +194,11 @@ long fsseek(int fd, long offset, int whence)
 int pwait()
 {
     return waitid(P_ALL, 0, null, WEXITED);
+}
+
+int pwait(pid_t pid)
+{
+    return waitid(P_PID, pid, null, WEXITED);
 }
 
 int waitid(idtype_t idtype, id_t id, void* infop, int options)
