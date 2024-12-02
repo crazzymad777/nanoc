@@ -48,7 +48,7 @@ extern(C) long lseek(int fd, long offset, int whence)
     return fsseek(fd, offset, whence);
 }
 
-extern(C) int execve(char** pathname, char** argv, char** envp)
+extern(C) int execve(char* pathname, const char** argv, char** envp)
 {
     static import nanoc.os;
     return nanoc.os.execve(pathname, argv, envp);
