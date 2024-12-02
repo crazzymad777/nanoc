@@ -296,3 +296,14 @@ int getrusage(int who, rusage* rusage)
     }
     return cast(int) s;
 }
+
+int execve(char** pathname, char** argv, char** envp)
+{
+    int result = cast(int) syscall(SYS_execve, pathname, argv, envp);
+    if (result < 0)
+    {
+        errno = sys_errno;
+    }
+    return result;
+}
+
