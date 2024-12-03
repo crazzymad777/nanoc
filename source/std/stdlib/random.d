@@ -22,3 +22,21 @@ extern(C) void srand(int seed)
     i = seed & 0xFFFF;
     j = (seed >> 8) & 0xFFFF;
 }
+
+unittest
+{
+    import nanoc.std.time;
+    srand(cast(int) time(null));
+    int[256] count;
+    //memset(cast(void*)count, 0, 256 * int.sizeof);
+    for (int i = 0; i < 256; i++)
+    {
+        uint r = rand();
+        count[r%256]++;
+    }
+
+    for (int i = 0; i < 256; i++)
+    {
+        assert(count[i] == 1);
+    }
+}
