@@ -53,6 +53,7 @@ template Footprint()
         immutable ModuleDescriptor("nanoc.std.ctype", "ctype.h"),
         immutable ModuleDescriptor("nanoc.std.errno", "errno.h"),
         immutable ModuleDescriptor("nanoc.sys.stat", "sys/stat.h"),
+        immutable ModuleDescriptor("nanoc.misc.signal", "signal.h"),
         immutable ModuleDescriptor("nanoc.std.time", "time.h"),
     );
 
