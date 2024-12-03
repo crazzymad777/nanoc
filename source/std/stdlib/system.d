@@ -30,15 +30,15 @@ extern (C) int system(const char* command)
         return -1;
     }
 
-    if (pid > 0)
+    if (pid == 0)
     {
-        // what if waitid interrupted?
-        siginfo_t siginfo;
-        waitid(P_PID, pid, &siginfo, WEXITED);
-        return siginfo.si_status;
+        execute(SHELL, command);
     }
 
-    execute(SHELL, command);
+    // what if waitid interrupted?
+    siginfo_t siginfo;
+    waitid(P_PID, pid, &siginfo, WEXITED);
+    return siginfo.si_status;
 }
 
 @Omit noreturn execute(const char* shell, const char* command)
