@@ -43,7 +43,7 @@ extern (C) int system(const char* command)
 
 @Omit noreturn execute(const char* shell, const char* command)
 {
-    import nanoc.os: execve;
+    import nanoc.std.unistd: execve;
     const char*[4] argv = [shell, "-c", command, null];
     execve(cast(char*) shell, cast(char**) argv, environ);
     // Error occurs
