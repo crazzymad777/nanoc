@@ -1,7 +1,7 @@
 module nanoc.std.stdlib;
 
 import std.meta: AliasSeq;
-alias SubModules = AliasSeq!("memory", "system");
+alias SubModules = AliasSeq!("memory", "system", "random");
 
 /* Page per allocation... */
 /* Relese page when freed */
