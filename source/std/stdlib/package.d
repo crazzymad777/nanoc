@@ -23,6 +23,14 @@ extern (C)
         pexit(status);
     }
 
+    noreturn abort()
+    {
+        import nanoc.misc.signal: raise;
+        import nanoc.os: SIGABRT;
+        raise(SIGABRT);
+        exit(127);
+    }
+
     __gshared char** environ = null;
 
     void* calloc(size_t nmemb, size_t size)

@@ -53,3 +53,11 @@ extern(C) int execve(char* pathname, const char** argv, char** envp)
     static import nanoc.os;
     return nanoc.os.execve(pathname, argv, envp);
 }
+
+import nanoc.os: pid_t;
+
+extern(C) pid_t getpid()
+{
+    import nanoc.os: pgetpid;
+    return pgetpid();
+}

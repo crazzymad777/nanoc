@@ -13,9 +13,11 @@ enum SYS_close = 3;
 enum SYS_lseek = 8;
 enum SYS_mmap = 9;
 enum SYS_munmap = 11;
+enum SYS_getpid = 39;
 enum SYS_fork = 57;
 enum SYS_execve = 59;
 enum SYS_exit = 60;
+enum SYS_kill = 62;
 enum SYS_fcntl = 72;
 enum SYS_fsync = 74;
 enum SYS_mkdir = 83;
@@ -30,3 +32,5 @@ enum SYS_arch_prctl = 158;
 enum SYS_time = 201;
 enum SYS_set_tid_address = 218;
 enum SYS_waitid = 247;
+
+// enum SYS_getrandom = 318;
