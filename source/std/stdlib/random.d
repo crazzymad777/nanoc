@@ -5,10 +5,10 @@ import nanoc.meta: Omit;
 // Given pseudorandom number generator was obtained by heuristic technique. That's it.
 
 @Omit
-uint i = 1;
+__gshared uint i = 1;
 
 @Omit
-uint j = 0;
+__gshared uint j = 0;
 
 extern(C) int rand()
 {
