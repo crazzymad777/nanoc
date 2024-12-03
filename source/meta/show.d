@@ -148,7 +148,7 @@ void show_meta_member(string x, alias member)()
             {
                 static if (x == member.stringof && !is(member : string))
                 {
-                    put_alias_seq("extern ", (CommonType!member).stringof , " ", x, ";\n");
+                    put_alias_seq("extern ", (Unqualing!(CommonType!member)).stringof , " ", x, ";\n");
                 }
                 else
                 {
