@@ -13,7 +13,7 @@ __gshared uint j = 0;
 extern(C) int rand()
 {
     j = j + i;
-    i = i ^ j << 1;
+    i = i ^ j << 2;
     return i++;
 }
 
