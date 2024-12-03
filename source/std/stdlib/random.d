@@ -25,17 +25,20 @@ extern(C) void srand(int seed)
 
 unittest
 {
+    import nanoc.std.stdio;
     import nanoc.std.time;
-    srand(cast(int) time(null));
-    int[256] count;
-    //memset(cast(void*)count, 0, 256 * int.sizeof);
-    for (int i = 0; i < 256; i++)
+    int seed = cast(int) time(null);
+    printf("Seed: %d\n", seed);
+    srand(seed);
+
+    int[0x10000] count;
+    for (int i = 0; i < 0x10000; i++)
     {
-        uint r = rand();
-        count[r%256]++;
+        uint x = rand()%0x10000u;
+        count[x]++;
     }
 
-    for (int i = 0; i < 256; i++)
+    for (int i = 0; i < 0x10000; i++)
     {
         assert(count[i] == 1);
     }
