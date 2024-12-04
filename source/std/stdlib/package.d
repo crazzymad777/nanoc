@@ -7,7 +7,6 @@ alias SubModules = AliasSeq!("memory", "system", "random");
 /* Relese page when freed */
 // version = NANOC_NAIVE_MEMORY_ALLOCATION;
 version = NANOC_MEMORY_ALLOCATION;
-// version = LIBC_MEMORY_ALLOCATION; // use OS libc
 
 const char* SHELL = "/bin/sh";
 
@@ -51,9 +50,5 @@ extern (C)
     version (NANOC_NAIVE_MEMORY_ALLOCATION)
     {
         public import nanoc.std.stdlib.naive;
-    }
-    else version(LIBC_MEMORY_ALLOCATION)
-    {
-        public import nanoc.std.stdlib.libc;
     }
 }
