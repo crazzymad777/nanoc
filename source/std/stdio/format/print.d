@@ -85,7 +85,15 @@ extern (C) int fprintf(T...)(FILE* stream, const char* format, T args)
                 {
                     static if (is(typeof(args[0]) == char))
                     {
-                        ret = fputc(args[0], stream);
+                        int check = fputc(args[0], stream);
+                        if (check != EOF)
+                        {
+                            ret = 1;
+                        }
+                        else
+                        {
+                            ret = 0;
+                        }
                     }
                     else
                     {
@@ -133,8 +141,9 @@ unittest
 {
     import nanoc.std.string: strcmp;
     char[32] buffer;
-    immutable char* expected = "25 -42 hello!".ptr;
-    int result = snprintf(cast(char*) buffer, 32, "%u %d %s", 25u, -42, cast(immutable(char)*)"hello!".ptr);
+    immutable char* expected = "j 25 -42 hello!".ptr;
+    int result = snprintf(cast(char*) buffer, 32, "%c %u %d %s", 'j', 25u, -42, cast(immutable(char)*)"hello!".ptr);
+    printf("%s\n", cast(char*) buffer);
     assert(result >= 0);
     assert(strcmp(cast(char*)buffer, expected) == 0);
 }
