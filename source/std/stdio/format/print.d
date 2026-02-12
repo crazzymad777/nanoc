@@ -71,7 +71,7 @@ extern (C) int fprintf(T...)(FILE* stream, const char* format, T args)
                 else if (x == 's')
                 {
                     //pragma(msg, typeof(args[0]));
-                    static if (is(typeof(args[0]) == immutable(char)*))
+                    static if (is(typeof(args[0]) == immutable(char)*) || is(typeof(args[0]) == char*))
                     {
                         ret = fputs(args[0], stream);
                     }
@@ -80,6 +80,17 @@ extern (C) int fprintf(T...)(FILE* stream, const char* format, T args)
                         ret = 0;
                     }
                     //ret = 0;
+                }
+                else if (x == 'c')
+                {
+                    static if (is(typeof(args[0]) == char))
+                    {
+                        ret = fputc(args[0], stream);
+                    }
+                    else
+                    {
+                        ret = 0;
+                    }
                 }
 
                 if (ret < 0)
@@ -116,4 +127,14 @@ extern (C) int fprintf(T...)(FILE* stream, const char* format, T args)
     }
 
     return nbytes;
+}
+
+unittest
+{
+    import nanoc.std.string: strcmp;
+    char[32] buffer;
+    immutable char* expected = "25 -42 hello!".ptr;
+    int result = snprintf(cast(char*) buffer, 32, "%u %d %s", 25u, -42, cast(immutable(char)*)"hello!".ptr);
+    assert(result >= 0);
+    assert(strcmp(cast(char*)buffer, expected) == 0);
 }

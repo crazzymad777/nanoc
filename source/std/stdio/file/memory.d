@@ -84,6 +84,7 @@ template FileInterface(alias A)
         byte* start = cast(byte*) stream.memory.data_ptr;
         import nanoc.std.string: memcpy;
         memcpy(start + offset, data, size);
+        stream.memory.offset += size;
         return cast(int) size;
     }
 
@@ -98,6 +99,7 @@ template FileInterface(alias A)
         byte* start = cast(byte*) stream.memory.data_ptr;
         import nanoc.std.string: memcpy;
         memcpy(data, start + offset, size);
+        stream.memory.offset += size;
         return cast(int) size;
     }
 }
