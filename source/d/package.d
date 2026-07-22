@@ -1,0 +1,1 @@
+module nanoc.d.stdarg;
