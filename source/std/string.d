@@ -101,3 +101,39 @@ unittest
     assert(strcmp(s1, s3) < 0);
     assert(strcmp(s3, s2) > 0);
 }
+
+extern(C) char* strchr(const (char)* s, int c)
+{
+    char* ptr = cast(char*) s;
+    while (*ptr != '\0')
+    {
+        if (*ptr == c)
+        {
+            return ptr;
+        }
+        ptr++;
+    }
+    return cast(char*) 0;
+}
+
+unittest
+{
+    immutable char* s0 = "".ptr;
+    assert(strchr(s0, ',') == cast(char*) 0);
+
+    immutable char* s1 = "/data/user/documents/".ptr;
+    immutable long[5] expected1 = [0, 5, 10, 20, - cast(long) s1];
+    char* ptr = cast(char*) s1;
+
+    int index = 0;
+    do
+    {
+        assert((ptr = strchr(ptr, '/')) - s1 == expected1[index]);
+        if (ptr == cast(char*) 0)
+        {
+            break;
+        }
+        ptr = ptr + 1;
+        index++;
+    } while (true);
+}
