@@ -1,5 +1,6 @@
 module nanoc.meta;
 
+import std.traits: isFunction;
 import std.meta;
 
 //version = DISABLE_METADATA;
@@ -7,6 +8,16 @@ import std.meta;
 struct SetKey
 {
     string name;
+}
+
+template Function()
+{
+}
+
+template WrapFunction(alias F)
+    if(isFunction!F)
+{
+    alias WrapFunction = AliasSeq!(Function, F);
 }
 
 enum Typedef;

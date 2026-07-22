@@ -79,39 +79,65 @@ if(!isPointer!T)
     alias Unqualing = Unqual!T;
 }
 
+void show_function(alias member)()
+{
+    // put_alias_seq("// " ~ x ~ ", " ~ __traits(identifier, member)  ~ "\n");
+    //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
+
+    static if (functionLinkage!member == "C")
+    {
+        static if (hasUDA!(member, SetKey))
+            const key = getUDAs!(member, SetKey)[0].name;
+        else
+            const key = __traits(identifier, member);
+
+        put_alias_seq((ReturnType!member).stringof, ' ', key, '(');
+        alias names = ParameterIdentifierTuple!member;
+        // alias names = AliasSeq!(ParameterIdentifierTuple!member);
+        int n = 0;
+        foreach (i, p; Parameters!member)
+        {
+            if (i > 0) put_alias_seq(", ");
+            put_alias_seq(Unqualing!(p).stringof);
+            static if (names[i] != "")
+            {
+                put_alias_seq(" ", names[i]);
+            }
+            n++;
+        }
+        // static if (variadicFunctionStyle!member == Variadic.c)
+        // {
+        //     if (n > 0) put_alias_seq(", ");
+        //     put_alias_seq("...");
+        // }
+        put_alias_seq(");\n");
+    }
+}
+
 /// Prints declaration of static function, struct, enum, union, variable or constant
-void show_meta_member(string x, alias member)()
+void show_meta_member(string x, alias member, Args...)()
 {
     static if (__traits(isStaticFunction, member))
     {
-        //puts(functionLinkage!member); // "D", "C", "C++", "Windows", "Objective-C", or "System".
-
-        static if (functionLinkage!member == "C")
+        static if (__traits(identifier, member) == x)
         {
-            put_alias_seq((ReturnType!member).stringof, ' ', x, '(');
-            alias names = ParameterIdentifierTuple!member;
-            // alias names = AliasSeq!(ParameterIdentifierTuple!member);
-            int n = 0;
-            foreach (i, p; Parameters!member)
-            {
-                if (i > 0) put_alias_seq(", ");
-                put_alias_seq(Unqualing!(p).stringof);
-                static if (names[i] != "")
-                {
-                    put_alias_seq(" ", names[i]);
-                }
-                n++;
-            }
-            // static if (variadicFunctionStyle!member == Variadic.c)
-            // {
-            //     if (n > 0) put_alias_seq(", ");
-            //     put_alias_seq("...");
-            // }
-            put_alias_seq(");\n");
+            // ignore aliases because they don't remain export symbol
+            show_function!(member)();
         }
     } else {
         static if (__traits(isTemplate, member)) {
-            put_alias_seq("// template: ", member.stringof, ' ', x, ";\n");
+            import nanoc.meta: Function;
+            static if (__traits(isSame, member, Function))
+            {
+                static if (Args.length > 0)
+                {
+                    show_function!(Args[0])();
+                }
+            }
+            else
+            {
+                put_alias_seq("// template: ", member.stringof, ' ', x, ";\n");
+            }
         }
         else if (__traits(isModule, member) || __traits(isPackage, member))
         {
@@ -218,7 +244,9 @@ void show_meta_module(string M, string H, string G)()
         }
         else
         {
-            static if (__traits(isTemplate, member) || !hasUDA!(member, Omit))
+            alias Protection = AliasSeq!member;
+            alias ProtectedMember = Protection[0];
+            static if (__traits(isTemplate, ProtectedMember) || !hasUDA!(member, Omit))
             {
                 show_meta_member!(x, member)();
             }
