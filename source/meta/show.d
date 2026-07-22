@@ -124,6 +124,11 @@ void show_meta_member(string x, alias member, Args...)()
             // ignore aliases because they don't remain export symbol
             show_function!(member)();
         }
+        else
+        {
+            put_alias_seq("// alias " ~ x ~ "\n// ");
+            show_function!(member)();
+        }
     } else {
         static if (__traits(isTemplate, member)) {
             import nanoc.meta: Function;
@@ -167,7 +172,12 @@ void show_meta_member(string x, alias member, Args...)()
                 }
                 else
                 {
-                    put_alias_seq("typedef ", member.stringof, ' ', x, ";\n");
+                    static if (Args.length > 0)
+                        const key = Args[0];
+                    else
+                        const key = x;
+
+                    put_alias_seq("typedef ", member.stringof, ' ', key, "; // type\n");
                 }
             }
             else
@@ -188,13 +198,18 @@ void show_meta_member(string x, alias member, Args...)()
                     else
                         const key = x;
 
+                    static if (hasUDA!(member, MacroParameter))
+                        const params = "(" ~ getUDAs!(member, MacroParameter)[0].param ~ ")";
+                    else
+                        const params = "";
+
                     static if (hasUDA!(member, Typedef))
                     {
-                        put_alias_seq("typedef ", value, " ", key, ";\n");
+                        put_alias_seq("typedef ", value, " ", key, "; //alias\n");
                     }
                     else
                     {
-                        put_alias_seq("#define ", key, " ", value, "\n");
+                        put_alias_seq("#define ", key , params, " ", value, params, "\n");
                     }
                 }
             }
@@ -246,7 +261,7 @@ void show_meta_module(string M, string H, string G)()
         {
             alias Protection = AliasSeq!member;
             alias ProtectedMember = Protection[0];
-            static if (__traits(isTemplate, ProtectedMember) || !hasUDA!(member, Omit))
+            static if (__traits(isTemplate, ProtectedMember) || !hasUDA!(ProtectedMember, Omit))
             {
                 show_meta_member!(x, member)();
             }

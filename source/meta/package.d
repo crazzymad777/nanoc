@@ -10,6 +10,11 @@ struct SetKey
     string name;
 }
 
+struct MacroParameter
+{
+    string param;
+}
+
 template Function()
 {
 }
@@ -17,7 +22,12 @@ template Function()
 template WrapFunction(alias F)
     if(isFunction!F)
 {
-    alias WrapFunction = AliasSeq!(Function, F);
+    alias WrapFunction = AliasSeq!(Function, F); // Function template, actual function
+}
+
+template Type(T, string name)
+{
+    alias Type = AliasSeq!(T, name); // actual type, their name
 }
 
 enum Typedef;
@@ -66,6 +76,9 @@ template Footprint()
         immutable ModuleDescriptor("nanoc.sys.stat", "sys/stat.h"),
         immutable ModuleDescriptor("nanoc.misc.signal", "signal.h"),
         immutable ModuleDescriptor("nanoc.std.time", "time.h"),
+        immutable ModuleDescriptor("nanoc.std.stdarg", "stdarg.h"),
+
+        immutable ModuleDescriptor("nanoc.fcntl", "fcntl.h"),
     );
 
     void show()
