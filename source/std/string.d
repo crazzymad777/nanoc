@@ -32,6 +32,11 @@ void* memset(void* s, int c, size_t n)
 extern(C)
 void* memcpy(void* dest, const(void)* src, size_t n)
 {
+    if (dest == src)
+    {
+        return dest;
+    }
+
     char* dest_buffer = cast(char*) dest;
     char* src_buffer = cast(char*) src;
     for (int i = 0; i < n; i++)
@@ -136,4 +141,29 @@ unittest
         ptr = ptr + 1;
         index++;
     } while (true);
+}
+
+extern(C) void* memmove(byte* dest, const (byte)* src, size_t n)
+{
+    if (dest == src)
+    {
+        return cast(void*) dest;
+    }
+
+    long k = dest - src + n;
+    if (k > 0 && k < n)
+    {
+        import nanoc.std.stdlib: malloc, free;
+        byte* buf = cast(byte*) malloc(k);
+        memcpy(buf, dest, k);
+        memcpy(dest, src, n-k);
+        memcpy(dest, buf, k);
+        free(buf);
+    }
+    else
+    {
+        memcpy(dest, src, n);
+    }
+
+    return cast(void*) dest;
 }
