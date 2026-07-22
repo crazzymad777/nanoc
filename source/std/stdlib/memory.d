@@ -10,10 +10,10 @@ struct SuperMemoryBlock
 {
     union {
         byte[0] begin;
-        MemoryBlock entry;
+        MemoryBlock entry; // information about SuperMemoryBlock itself
     }
-    MemoryBlock field;
-    MemoryBlock head;
+    MemoryBlock field; // NEXT_HEAP_POINTER
+    MemoryBlock head; // first children memory block
     byte[0] data;
 }
 
@@ -147,6 +147,7 @@ MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
             return subblock;
         }
 
+        // Special case
         if (!(superblock.head.flags & MemoryBlock.CLAIMED))
         {
             if (new_block_size - MemoryBlock.sizeof <= superblock.head.size)
@@ -225,6 +226,7 @@ size_t unclaim_memory_block(MemoryBlock* entry_block, MemoryBlock* block)
 /// Free dynamic memory
 extern (C) void free(void *ptr)
 {
+    alias NANOC_MEMORY = MemoryBlock.NANOC_MEMORY;
     alias SUPERBLOCK = MemoryBlock.SUPERBLOCK;
     alias PRIMARY = MemoryBlock.PRIMARY;
     import nanoc.sys.mman: munmap;
@@ -234,10 +236,9 @@ extern (C) void free(void *ptr)
     {
         if (freed_block.flags & SUPERBLOCK)
         {
-            // Primary Superblock detected
-            // It should be removed from primary superblock list
-            unclaim_single_memory_block(freed_block);
-            // Now at least unclaim it
+            // free() should not use in this way
+            // because malloc() should not return such memory block
+            return;
         }
         else
         {
@@ -248,6 +249,18 @@ extern (C) void free(void *ptr)
     }
     else
     {
+        if (freed_block.flags & NANOC_MEMORY)
+        {
+            // prevent
+            return;
+        }
+
+        if ((freed_block.flags & MemoryBlock.NEXT_HEAP_POINTER) || (freed_block.flags & MemoryBlock.HEAD_BLOCK_POINTER))
+        {
+            // prevent
+            return;
+        }
+
         unclaim_memory_block(freed_block, freed_block);
         // if between freed block and tail block there is no claimed block then we need to check blocks between head & free block
         // find tail block, unclaim it
