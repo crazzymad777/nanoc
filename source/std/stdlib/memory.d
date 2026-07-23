@@ -17,6 +17,14 @@ struct SuperMemoryBlock
     byte[0] data;
 }
 
+struct InfoMemoryBlock
+{
+    MemoryBlock entry;
+    MemoryBlock field;
+    MemoryBlock head;
+    MemoryBlock tail;
+}
+
 // Memory block must have size and flags
 struct MemoryBlock
 {
@@ -49,6 +57,12 @@ struct MemoryBlock
 	}
 	long flags;
 	byte[0] data;
+}
+
+unittest
+{
+    assert(MemoryBlock.sizeof == (void*).sizeof * 2);
+    assert(4096 % MemoryBlock.sizeof == 0);
 }
 
 @Omit
@@ -117,6 +131,14 @@ void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
     MemoryBlock* tail = cast(MemoryBlock*) tail_in_bytes - 1;
     tail.flags = NANOC_MEMORY | MemoryBlock.TAIL;
     tail.head = &superblock.head;
+
+    MemoryBlock* x = cast(MemoryBlock*) &superblock.data;
+    do
+    {
+        // properly format super memory block
+        x.flags = 0;
+        x += 1;
+    } while(x < tail);
 }
 
 @Omit
@@ -210,16 +232,36 @@ void unclaim_single_memory_block(MemoryBlock* single_block)
 }
 
 @Omit
-size_t unclaim_memory_block(MemoryBlock* entry_block, MemoryBlock* block)
+size_t unclaim_memory_block(InfoMemoryBlock* imb, MemoryBlock* entry_block, MemoryBlock* block)
 {
+    if (entry_block == block)
+    {
+        alias CLAIMED = MemoryBlock.MemoryBlockFlagsOffset.CLAIMED;
+        if ((block.flags & (1uL << CLAIMED)) == 0)
+        {
+            return 0;
+        }
+    }
+
     unclaim_single_memory_block(block);
-    // MemoryBlock* next = cast(MemoryBlock*) (&block.data + block.size);
-    // if (next.flags & MemoryBlock.TAIL || next.flags & MemoryBlock.CLAIMED)
-    // {
-    //     return block.size;
-    // }
-    // return block.size + unclaim_memory_block(entry_block, next);
-    return block.size;
+    MemoryBlock* next = cast(MemoryBlock*) (&block.data + block.size);
+    if (next.flags & MemoryBlock.CLAIMED)
+    {
+        return block.size;
+    }
+    if (next.flags & MemoryBlock.TAIL)
+    {
+        imb.tail = *next;
+        imb.head = *(next.head);
+        MemoryBlock* smb = next.head - 2;
+        imb.entry = *(smb);
+        imb.field = *(smb + 1);
+
+        MemoryBlock* x = next.head + 1;
+        return unclaim_memory_block(imb, entry_block, x);
+    }
+    return block.size + unclaim_memory_block(imb, entry_block, next);
+    // return block.size;
 }
 
 
@@ -261,7 +303,12 @@ extern (C) void free(void *ptr)
             return;
         }
 
-        unclaim_memory_block(freed_block, freed_block);
+        InfoMemoryBlock imb;
+        size_t freed_space = unclaim_memory_block(&imb, freed_block, freed_block);
+        if (freed_space == 4096 - MemoryBlock.sizeof * 4)
+        {
+
+        }
         // if between freed block and tail block there is no claimed block then we need to check blocks between head & free block
         // find tail block, unclaim it
         // If super block don't have claimed blocks then free superblock
