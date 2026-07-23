@@ -232,6 +232,22 @@ void unclaim_single_memory_block(MemoryBlock* single_block)
 }
 
 @Omit
+void copy_info_by_head(InfoMemoryBlock* imb, MemoryBlock* head)
+{
+    imb.head = *head;
+    MemoryBlock* smb = head - 2;
+    imb.entry = *(smb);
+    imb.field = *(smb + 1);
+}
+
+@Omit
+void copy_info_by_tail(InfoMemoryBlock* imb, MemoryBlock* tail)
+{
+    imb.tail = *tail;
+    copy_info_by_head(imb, tail.head);
+}
+
+@Omit
 size_t unclaim_memory_block(InfoMemoryBlock* imb, MemoryBlock* entry_block, MemoryBlock* block)
 {
     if (entry_block == block)
@@ -251,12 +267,7 @@ size_t unclaim_memory_block(InfoMemoryBlock* imb, MemoryBlock* entry_block, Memo
     }
     if (next.flags & MemoryBlock.TAIL)
     {
-        imb.tail = *next;
-        imb.head = *(next.head);
-        MemoryBlock* smb = next.head - 2;
-        imb.entry = *(smb);
-        imb.field = *(smb + 1);
-
+        copy_info_by_tail(imb, next);
         MemoryBlock* x = next.head + 1;
         return unclaim_memory_block(imb, entry_block, x);
     }
