@@ -113,6 +113,10 @@ void memory_deallocate(Page* page, void* ptr)
     if (bytes <= cast(size_t) ptr && bytes+4096 > cast(size_t) ptr)
     {
         long index = cast(long[8]*) ptr - &page.cells[0];
+        if (index < 0 || index >= CELLS_NUMBER)
+        {
+            return;
+        }
 
         long allocation = 1uL << index;
         long hold = 1uL << index;
