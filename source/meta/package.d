@@ -66,6 +66,7 @@ template Footprint()
         immutable ModuleDescriptor("nanoc.sys.stat", "sys/stat.h"),
         immutable ModuleDescriptor("nanoc.misc.signal", "signal.h"),
         immutable ModuleDescriptor("nanoc.std.time", "time.h"),
+        immutable ModuleDescriptor("nanoc.misc.alloca", "alloca.h"),
     );
 
     void show()
