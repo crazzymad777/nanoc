@@ -4,326 +4,196 @@ public import nanoc.std.stdlib.naive: realloc;
 
 import nanoc.meta: Omit;
 
-// Super memory block must have field, head & tail
-// Super memory block contains other memory blocks
-struct SuperMemoryBlock
+struct PageHeader
 {
-    union {
-        byte[0] begin;
-        MemoryBlock entry; // information about SuperMemoryBlock itself
-    }
-    MemoryBlock field; // NEXT_HEAP_POINTER
-    MemoryBlock head; // first children memory block
-    byte[0] data;
+    size_t size;
+    long flags;
+    long allocation_bitmap;
+    long hold_bitmap;
 }
 
-struct InfoMemoryBlock
-{
-    MemoryBlock entry;
-    MemoryBlock field;
-    MemoryBlock head;
-    MemoryBlock tail;
-}
+const uint CELLS_NUMBER = 63;
 
-// Memory block must have size and flags
-struct MemoryBlock
+struct Page
 {
-    enum MemoryBlockFlagsOffset
+    union
     {
-        CLAIMED = 0,
-        PRIMARY = 1,
-        NANOC_MEMORY = 2,
-        NEXT_HEAP_POINTER = 3,
-        HEAD_BLOCK_POINTER = 4,
-        HEAD = 5,
-        SUPERBLOCK = 6
+        byte[0] begin;
+        PageHeader header;
     }
     enum
     {
-        CLAIMED = 1, // in use
-        PRIMARY = 2, // Allocated with mmap
-        NANOC_MEMORY = 4, // belongs to nano C
-        NEXT_HEAP_POINTER = 8, // link
-        HEAD_BLOCK_POINTER = 16, // tail
-        HEAD = 32, // head
-        SUPERBLOCK = 64 // superblock
+        PROTECTED = 1 // user can't deallocate page
     }
-    alias TAIL = HEAD_BLOCK_POINTER;
-
-    union {
-		size_t size;
-		MemoryBlock* head; // for tail, correspodent head
-		SuperMemoryBlock* next_super_heap; // for NextSuperHeap
-	}
-	long flags;
-	byte[0] data;
+    long[8][CELLS_NUMBER] cells;
+    Page* next_page;
+    byte[24] pad;
 }
 
 unittest
 {
-    assert(MemoryBlock.sizeof == (void*).sizeof * 2);
-    assert(4096 % MemoryBlock.sizeof == 0);
+    // import nanoc.std.stdio;
+    // printf("%d\n", cast(int) PageHeader.sizeof);
+    assert(Page.sizeof == 4096);
 }
 
-@Omit
-__gshared SuperMemoryBlock* beginSuperBlock = null;
+// @Omit
+// __gshared Page* pages = null;
 
-extern(C)
-@("mmap_wrapper")
 @Omit
-MemoryBlock* _allocate_primary_memory_block(size_t size)
+__gshared Page* main_page = null;
+
+@Omit
+void* memory_allocate(Page* page, size_t size)
 {
-    import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
-    // raw memory block
-    if (size < MemoryBlock.sizeof)
+    if (size > 4096-PageHeader.sizeof)
     {
+        import nanoc.std.stdio;
         return null;
     }
 
-    MemoryBlock* raw_block = cast(MemoryBlock*) mmap(null, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (raw_block)
+    // int k = 1;
+    int j = 1;
+    long list = page.header.hold_bitmap;
+    int i = 0;
+    for (; i < CELLS_NUMBER; i++)
     {
-        raw_block.flags = MemoryBlock.CLAIMED | MemoryBlock.PRIMARY;
-        raw_block.size = size;
-        return raw_block;
-    }
-    return null;
-}
-
-extern(C)
-@("mmap_wrapper")
-@Omit
-SuperMemoryBlock* _init_super_block(size_t size)
-{
-    import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
-    if (size < MemoryBlock.sizeof * 4)
-    {
-        return null;
-    }
-
-    import core.stdc.stdlib;
-    SuperMemoryBlock* block = cast(SuperMemoryBlock*) _allocate_primary_memory_block(size);
-    if (block)
-    {
-        block.entry.flags = MemoryBlock.CLAIMED | MemoryBlock.PRIMARY | MemoryBlock.NANOC_MEMORY | MemoryBlock.SUPERBLOCK;
-        block.entry.size = size;
-        _init_nanoc_super_heap(block, size);
-        return block;
-    }
-    return null;
-}
-
-@Omit
-void _init_nanoc_super_heap(SuperMemoryBlock* superblock, size_t size)
-{
-    alias HEAD_BLOCK_POINTER = MemoryBlock.HEAD_BLOCK_POINTER;
-    alias NEXT_HEAP_POINTER = MemoryBlock.NEXT_HEAP_POINTER;
-    alias NANOC_MEMORY = MemoryBlock.NANOC_MEMORY;
-    alias HEAD = MemoryBlock.HEAD;
-
-    superblock.field.flags = NEXT_HEAP_POINTER;
-    superblock.field.next_super_heap = null;
-
-    superblock.head.flags = NANOC_MEMORY | HEAD;
-    superblock.head.size = size - MemoryBlock.sizeof * 4;
-
-    byte* tail_in_bytes = cast(byte*)&superblock.begin + size;
-    MemoryBlock* tail = cast(MemoryBlock*) tail_in_bytes - 1;
-    tail.flags = NANOC_MEMORY | MemoryBlock.TAIL;
-    tail.head = &superblock.head;
-
-    MemoryBlock* x = cast(MemoryBlock*) &superblock.data;
-    do
-    {
-        // properly format super memory block
-        x.flags = 0;
-        x += 1;
-    } while(x < tail);
-}
-
-@Omit
-MemoryBlock* dedicate_memory_block(SuperMemoryBlock* superblock, size_t size)
-{
-    if (superblock is null) return null;
-    if (size > 4096-MemoryBlock.sizeof*4)
-    {
-        return null;
-    }
-
-    import nanoc.std.errno: errno, EINVAL;
-    if (superblock.entry.flags & MemoryBlock.NANOC_MEMORY)
-    {
-        size_t new_block_size = size + MemoryBlock.sizeof;
-        if (new_block_size % 2 == 1)
+        if ((list & 1) == 0)
         {
-            new_block_size += 1;
-        }
-
-        if (new_block_size < superblock.head.size)
-        {
-            superblock.head.size -= new_block_size;
-            byte* pointer = cast(byte*) &superblock.head.data + superblock.head.size;
-            MemoryBlock* subblock = cast(MemoryBlock*) pointer;
-            subblock.size = new_block_size;
-            subblock.flags = 0;
-            return subblock;
-        }
-
-        // Special case
-        if (!(superblock.head.flags & MemoryBlock.CLAIMED))
-        {
-            if (new_block_size - MemoryBlock.sizeof <= superblock.head.size)
+            if (j * long[8].sizeof >= size)
             {
-                // use head block
-                superblock.head.flags |= MemoryBlock.CLAIMED;
-                return &superblock.head;
+                break;
+            }
+            else
+            {
+                j++;
             }
         }
-
-        if (superblock.field.next_super_heap is null)
+        else
         {
-            superblock.field.next_super_heap = _init_super_block(4096);
-            if (superblock.field.next_super_heap is null)
+            j = 1;
+        }
+
+        list = list >> 1;
+    }
+
+    if (i == CELLS_NUMBER)
+    {
+        import nanoc.std.stdio;
+        if (page.next_page is null)
+        {
+            page.next_page = create_page();
+            if (page.next_page is null)
             {
                 return null;
             }
         }
-
-        return dedicate_memory_block(superblock.field.next_super_heap, size);
+        return memory_allocate(page.next_page, size);
     }
-    errno = EINVAL;
-    return null;
+
+    long allocation = page.header.allocation_bitmap;
+    page.header.allocation_bitmap = allocation | (1uL << i);
+
+    int index = i;
+    long hold = page.header.hold_bitmap;
+    while (i >= 0)
+    {
+        hold |= (1uL << i);
+        i--;
+    }
+    page.header.hold_bitmap |= hold;
+
+    return cast (void*) &page.cells[index];
+}
+
+@Omit
+void memory_deallocate(Page* page, void* ptr)
+{
+    size_t bytes = cast(size_t) page;
+    if (bytes <= cast(size_t) ptr && bytes+4096 > cast(size_t) ptr)
+    {
+        long index = cast(long[8]*) ptr - &page.cells[0];
+
+        long allocation = 1uL << index;
+        long hold = 1uL << index;
+        index++;
+        for (; index < CELLS_NUMBER; index++)
+        {
+            if (page.header.allocation_bitmap & (1uL << index))
+            {
+                break;
+            }
+            allocation |= 1uL << index;
+            hold |= 1uL << index;
+        }
+        page.header.allocation_bitmap &= ~allocation;
+        page.header.hold_bitmap &= ~hold;
+        return;
+    }
+}
+
+@Omit
+Page* create_page()
+{
+    import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
+    Page* page = cast(Page*) mmap(null, 4096, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    if (page is null)
+    {
+        return null;
+    }
+    page.header.flags = Page.PROTECTED;
+    page.header.size = 4096;
+    page.header.allocation_bitmap = 0;
+    page.header.hold_bitmap = 0;
+    page.next_page = null;
+    return page;
 }
 
 /// Dynamic memory allocation
 extern (C) void* malloc(size_t size)
 {
-    if (beginSuperBlock is null)
+    import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
+    if (size > 4096-PageHeader.sizeof)
     {
-        beginSuperBlock = _init_super_block(4096); // size + MemoryBlock.sizeof*4);
+        Page* page = cast(Page*) mmap(null, size + 16, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+        page.header.flags = 0;
+        page.header.size = size + 16;
+        return cast(void*) &page.header.allocation_bitmap;
     }
 
-    alias CLAIMED = MemoryBlock.CLAIMED;
-    alias HEAD = MemoryBlock.HEAD;
-    alias TAIL = MemoryBlock.TAIL;
-
-    auto superblock = beginSuperBlock;
-    MemoryBlock* block = dedicate_memory_block(superblock, size);
-
-    if (block is null)
+    if (main_page == null)
     {
-        block = _allocate_primary_memory_block(size + MemoryBlock.sizeof);
-    }
-
-    if (block)
-    {
-        block.flags |= CLAIMED;
-        return cast(void*) (block + 1);
-    }
-    return null;
-}
-
-@Omit
-void unclaim_single_memory_block(MemoryBlock* single_block)
-{
-    alias CLAIMED = MemoryBlock.MemoryBlockFlagsOffset.CLAIMED;
-    long flags = single_block.flags;
-    single_block.flags = flags & ~(1uL << CLAIMED);
-}
-
-@Omit
-void copy_info_by_head(InfoMemoryBlock* imb, MemoryBlock* head)
-{
-    imb.head = *head;
-    MemoryBlock* smb = head - 2;
-    imb.entry = *(smb);
-    imb.field = *(smb + 1);
-}
-
-@Omit
-void copy_info_by_tail(InfoMemoryBlock* imb, MemoryBlock* tail)
-{
-    imb.tail = *tail;
-    copy_info_by_head(imb, tail.head);
-}
-
-@Omit
-size_t unclaim_memory_block(InfoMemoryBlock* imb, MemoryBlock* entry_block, MemoryBlock* block)
-{
-    if (entry_block == block)
-    {
-        alias CLAIMED = MemoryBlock.MemoryBlockFlagsOffset.CLAIMED;
-        if ((block.flags & (1uL << CLAIMED)) == 0)
+        Page* page = create_page();
+        if (page is null)
         {
-            return 0;
+            return null;
         }
+        main_page = page;
     }
-
-    unclaim_single_memory_block(block);
-    MemoryBlock* next = cast(MemoryBlock*) (&block.data + block.size);
-    if (next.flags & MemoryBlock.CLAIMED)
-    {
-        return block.size;
-    }
-    if (next.flags & MemoryBlock.TAIL)
-    {
-        copy_info_by_tail(imb, next);
-        MemoryBlock* x = next.head + 1;
-        return unclaim_memory_block(imb, entry_block, x);
-    }
-    return block.size + unclaim_memory_block(imb, entry_block, next);
-    // return block.size;
+    return memory_allocate(main_page, size);
 }
-
 
 /// Free dynamic memory
 extern (C) void free(void *ptr)
 {
-    alias NANOC_MEMORY = MemoryBlock.NANOC_MEMORY;
-    alias SUPERBLOCK = MemoryBlock.SUPERBLOCK;
-    alias PRIMARY = MemoryBlock.PRIMARY;
+    size_t bytes = cast(size_t) ptr;
+    bytes = (bytes / 4096) * 4096;
+    Page* page = cast(Page*) bytes;
+
+    if (page.header.flags & Page.PROTECTED)
+    {
+        memory_deallocate(page, ptr);
+        return;
+    }
+
     import nanoc.sys.mman: munmap;
-    auto freed_block = cast(MemoryBlock*) (ptr - 1);
-
-    if (freed_block.flags & PRIMARY)
+    long* memory = cast(long*) (ptr-2);
+    size_t size = memory[0];
+    if (memory == ptr)
     {
-        if (freed_block.flags & SUPERBLOCK)
-        {
-            // free() should not use in this way
-            // because malloc() should not return such memory block
-            return;
-        }
-        else
-        {
-            // called free on PRIMARY memory block
-            size_t size = freed_block.size;
-            munmap(cast(void*) freed_block, size);
-        }
+        munmap(cast(void*) memory, size);
     }
-    else
-    {
-        if (freed_block.flags & NANOC_MEMORY)
-        {
-            // prevent
-            return;
-        }
-
-        if ((freed_block.flags & MemoryBlock.NEXT_HEAP_POINTER) || (freed_block.flags & MemoryBlock.HEAD_BLOCK_POINTER))
-        {
-            // prevent
-            return;
-        }
-
-        InfoMemoryBlock imb;
-        size_t freed_space = unclaim_memory_block(&imb, freed_block, freed_block);
-        if (freed_space == 4096 - MemoryBlock.sizeof * 4)
-        {
-
-        }
-        // if between freed block and tail block there is no claimed block then we need to check blocks between head & free block
-        // find tail block, unclaim it
-        // If super block don't have claimed blocks then free superblock
-    }
+    return;
 }
 
 alias _malloc = malloc;

@@ -118,6 +118,8 @@ unittest
 
 extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
 {
+    import nanoc.std.stdio;
+
     import nanoc.std.stdio.file.utils: parseMode;
     int imode = 0;
     if (parseMode(mode, &imode) is null)
@@ -129,6 +131,8 @@ extern(C) FILE* fmemopen(void* buf, size_t size, const char* mode)
 
     import nanoc.std.stdlib: _malloc, _free;
     FILE* f = cast(FILE*) _malloc(FILE.sizeof);
+    *f = FILE.init;
+
     if (f)
     {
         f.type = FILE.Type.MEMORY_STREAM;
@@ -188,6 +192,7 @@ unittest
 
 unittest
 {
+    import nanoc.std.stdio;
     char[1] buffer;
     auto f = fmemopen(cast(void*)&buffer, 1, "r+".ptr);
     assert(fputc('a', f) == 'a');
