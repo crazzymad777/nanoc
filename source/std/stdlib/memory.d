@@ -10,8 +10,9 @@ struct PageHeader
     long flags;
     long allocation_bitmap;
     long hold_bitmap;
+    Page* prev_page;
     Page* next_page;
-    byte[24] pad;
+    byte[16] pad;
 }
 
 const uint CELLS_NUMBER = 63;
@@ -82,7 +83,7 @@ void* memory_allocate(Page* page, size_t size)
         import nanoc.std.stdio;
         if (page.header.next_page is null)
         {
-            page.header.next_page = create_page();
+            page.header.next_page = create_page(page);
             if (page.header.next_page is null)
             {
                 return null;
@@ -132,12 +133,49 @@ void memory_deallocate(Page* page, void* ptr)
         }
         page.header.allocation_bitmap &= ~allocation;
         page.header.hold_bitmap &= ~hold;
+
+        if (page.header.allocation_bitmap == 0)
+        {
+            destroy_page(page);
+        }
         return;
     }
 }
 
 @Omit
-Page* create_page()
+void destroy_page(Page* page)
+{
+    Page* next = page.header.next_page;
+    Page* prev = page.header.prev_page;
+
+    if (prev is null)
+    {
+        if (main_page == page)
+        {
+            main_page = next;
+        }
+
+        if (next !is null)
+        {
+            next.header.prev_page = prev;
+        }
+    }
+
+    if (prev !is null)
+    {
+        prev.header.next_page = next;
+        if (next !is null)
+        {
+            next.header.prev_page = prev;
+        }
+    }
+
+    import nanoc.sys.mman: munmap;
+    munmap(cast(void*) page, page.header.size);
+}
+
+@Omit
+Page* create_page(Page* prev_page = null)
 {
     import nanoc.sys.mman: mmap, PROT_READ, PROT_WRITE, MAP_PRIVATE, MAP_ANONYMOUS;
     Page* page = cast(Page*) mmap(null, 4096, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
@@ -149,6 +187,7 @@ Page* create_page()
     page.header.size = 4096;
     page.header.allocation_bitmap = 0;
     page.header.hold_bitmap = 0;
+    page.header.prev_page = prev_page;
     page.header.next_page = null;
     return page;
 }
