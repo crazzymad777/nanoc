@@ -10,6 +10,8 @@ struct PageHeader
     long flags;
     long allocation_bitmap;
     long hold_bitmap;
+    Page* next_page;
+    byte[24] pad;
 }
 
 const uint CELLS_NUMBER = 63;
@@ -26,8 +28,6 @@ struct Page
         PROTECTED = 1 // user can't deallocate page
     }
     long[8][CELLS_NUMBER] cells;
-    Page* next_page;
-    byte[24] pad;
 }
 
 unittest
@@ -80,15 +80,15 @@ void* memory_allocate(Page* page, size_t size)
     if (i == CELLS_NUMBER)
     {
         import nanoc.std.stdio;
-        if (page.next_page is null)
+        if (page.header.next_page is null)
         {
-            page.next_page = create_page();
-            if (page.next_page is null)
+            page.header.next_page = create_page();
+            if (page.header.next_page is null)
             {
                 return null;
             }
         }
-        return memory_allocate(page.next_page, size);
+        return memory_allocate(page.header.next_page, size);
     }
 
     long allocation = page.header.allocation_bitmap;
@@ -145,7 +145,7 @@ Page* create_page()
     page.header.size = 4096;
     page.header.allocation_bitmap = 0;
     page.header.hold_bitmap = 0;
-    page.next_page = null;
+    page.header.next_page = null;
     return page;
 }
 

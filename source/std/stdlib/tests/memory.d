@@ -75,3 +75,13 @@ unittest
         _free(ptrs[i]);
     }
 }
+
+unittest
+{
+    byte* bytes = cast(byte*) _malloc(4096-PageHeader.sizeof-1);
+    if (bytes is null)
+    {
+        assert(false, "_malloc failed");
+    }
+    _free(bytes);
+}
