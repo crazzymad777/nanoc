@@ -123,7 +123,7 @@ void memory_deallocate(Page* page, void* ptr)
         index++;
         for (; index < CELLS_NUMBER; index++)
         {
-            if (page.header.allocation_bitmap & (1uL << index))
+            if (page.header.allocation_bitmap & (1uL << index) || ((page.header.hold_bitmap & (1uL << index)) == 0))
             {
                 break;
             }
