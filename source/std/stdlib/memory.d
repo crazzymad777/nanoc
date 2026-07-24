@@ -15,6 +15,7 @@ struct PageHeader
     byte[16] pad;
 }
 
+@Omit
 const uint CELLS_NUMBER = 63;
 
 struct Page

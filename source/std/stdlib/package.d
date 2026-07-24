@@ -1,17 +1,26 @@
 module nanoc.std.stdlib;
 
-import std.meta: AliasSeq;
+import std.meta: AliasSeq, Alias;
 alias SubModules = AliasSeq!("memory", "system", "random");
 
 /* Page per allocation... */
 /* Relese page when freed */
 // version = NANOC_NAIVE_MEMORY_ALLOCATION;
 version = NANOC_MEMORY_ALLOCATION;
+import nanoc.meta: SetKey, Nake, Omit;
+@SetKey("alloca") @Nake enum _alloca = "__builtin_alloca";
 
 const char* SHELL = "/bin/sh";
 
 extern (C)
 {
+    // for __builtin_alloca & __builtin_va_arg
+    @Omit
+    noreturn __stack_chk_fail()
+    {
+        abort();
+    }
+
     /// Terminate a process
     noreturn exit(int status)
     {
