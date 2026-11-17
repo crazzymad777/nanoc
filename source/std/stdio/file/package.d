@@ -110,3 +110,35 @@ extern (C) int feof(FILE* stream)
 {
     return nanoeof(checkStdHandler(stream));
 }
+
+extern (C) char* fgets(char* buffer, size_t size, FILE* stream)
+{
+    int index = 0;
+    do
+    {
+        int character = fgetc(stream);
+
+        if (character == -1)
+        {
+            if (ferror(stream) != 0) return null;
+            if (index == 0) return null;
+            break;
+        }
+        else
+        {
+            if (index < size)
+            {
+                buffer[index] = cast(char) character;
+                index++;
+            }
+
+            if (index == size || character == '\n')
+            {
+                buffer[index] = '\0';
+                break;
+            }
+        }
+    } while (1);
+
+    return buffer;
+}
