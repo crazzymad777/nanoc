@@ -32,75 +32,96 @@ unittest
     PUNCT = 0b100000000000
 };
 
-@Omit bool checkWcByBitmask(dchar x, WideCharBitmask bitmask)
+@Omit bool checkWcByBitmask(dchar x, WideCharBitmask bitmask) pure
 {
-    int i = 0;
-    for (; i < range.length - 1; i++)
+    // int i = 0;
+    // for (; i < range.length - 1; i++)
+    // {
+    //     if (x >= range[i] && x < range[i+1])
+    //     {
+    //         break;
+    //     }
+    // }
+    // return cast(bool) (bitsets[i] & bitmask);
+    int low = 0;
+    int high = cast(int)range.length - 1 - 1;
+    int mid = 0;
+    while (low <= high)
     {
-        if (x >= range[i] && x < range[i+1])
+        mid = (low + high) / 2; // 2
+        if (x >= range[mid] && x < range[mid])
         {
             break;
         }
+
+        if (range[mid] < x)
+        {
+            low = mid + 1;
+        }
+        else
+        {
+            high = mid - 1;
+        }
     }
-    return cast(bool) (bitsets[i] & bitmask);
+    return cast(bool) (bitsets[mid] & bitmask);
 }
 
-extern (C) int iswcntrl(dchar x)
+extern (C) int iswcntrl(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.CNTRL);
 }
 
-extern (C) int iswblank(dchar x)
+extern (C) int iswblank(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.BLANK);
 }
 
-extern (C) int iswspace(dchar x)
+extern (C) int iswspace(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.SPACE);
 }
 
-extern (C) int iswupper(dchar x)
+extern (C) int iswupper(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.UPPER);
 }
 
-extern (C) int iswlower(dchar x)
+extern (C) int iswlower(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.LOWER);
 }
 
-extern (C) int iswalpha(dchar x)
+extern (C) int iswalpha(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.ALPHA);
 }
 
-extern (C) int iswdigit(dchar x)
+extern (C) int iswdigit(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.DIGIT);
 }
 
-extern (C) int iswalnum(dchar x)
+extern (C) int iswalnum(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.ALPHA | WideCharBitmask.DIGIT);
 }
 
-extern (C) int iswxdigit(dchar x)
+extern (C) int iswxdigit(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.XDIGIT);
 }
 
-extern (C) int iswprint(dchar x)
+extern (C) int iswprint(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.PRINT);
 }
 
-extern (C) int iswgraph(dchar x)
+extern (C) int iswgraph(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.GRAPH);
 }
 
-extern (C) int iswpunct(dchar x)
+extern (C) int iswpunct(dchar x) pure
 {
     return checkWcByBitmask(x, WideCharBitmask.PUNCT);
 }
