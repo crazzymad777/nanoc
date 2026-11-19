@@ -1,5 +1,37 @@
 module nanoc.std.wctype;
 
+import nanoc.meta: SetKey, Nake, Typedef;
+
+import std.meta: Alias;
+
+@Typedef @SetKey("wchar_t") @Nake enum _dchar = "dchar";
+@Typedef @SetKey("wint_t") @Nake enum _int = "wchar_t";
+@Typedef @SetKey("wctype_t") @Nake enum _wctype = "int";
+alias WEOF = Alias!(-1);
+
+extern (C) int wctype(const char* str)
+{
+    import nanoc.std.string;
+    if (strcmp("alnum", str) == 0) return WideCharBitmask.ALPHA | WideCharBitmask.DIGIT;
+    if (strcmp("alpha", str) == 0) return WideCharBitmask.ALPHA;
+    if (strcmp("lower", str) == 0) return WideCharBitmask.LOWER;
+    if (strcmp("upper", str) == 0) return WideCharBitmask.UPPER;
+    if (strcmp("digit", str) == 0) return WideCharBitmask.DIGIT;
+    if (strcmp("xdigit", str) == 0) return WideCharBitmask.XDIGIT;
+    if (strcmp("cntrl", str) == 0) return WideCharBitmask.CNTRL;
+    if (strcmp("graph", str) == 0) return WideCharBitmask.GRAPH;
+    if (strcmp("space", str) == 0) return WideCharBitmask.SPACE;
+    if (strcmp("blank", str) == 0) return WideCharBitmask.BLANK;
+    if (strcmp("print", str) == 0) return WideCharBitmask.PRINT;
+    if (strcmp("punct", str) == 0) return WideCharBitmask.PUNCT;
+    return 0;
+}
+
+extern (C) int iswctype(dchar wc, int desc)
+{
+    return checkWcByBitmask(wc, cast(WideCharBitmask) desc);
+}
+
 unittest
 {
     // Test binary search
@@ -30,7 +62,7 @@ unittest
 
 @Omit enum WideCharBitmask
 {
-    ALNUM = 0b1,
+    // ALNUM = 0b1,
     ALPHA = 0b10,
     LOWER = 0b100,
     UPPER = 0b1000,
