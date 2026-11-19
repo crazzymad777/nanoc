@@ -14,6 +14,15 @@ unittest
     assert(iswpunct(',') == 1);
     assert(iswspace('\n') == 1);
     assert(iswcntrl('\b') == 1);
+
+    // assert(Sequential_checkWcByBitmask(69630, WideCharBitmask.ALPHA) == iswalpha(69630));
+    //
+    // import nanoc.std.stdio;
+    // for (int i = 0; i < 69640; i++)
+    // {
+    //     printf("%d\n", i);
+    //     assert(Sequential_checkWcByBitmask(i, WideCharBitmask.ALPHA) == iswalpha(i));
+    // }
 }
 
 @Omit enum WideCharBitmask
@@ -32,24 +41,22 @@ unittest
     PUNCT = 0b100000000000
 };
 
-@Omit bool checkWcByBitmask(dchar x, WideCharBitmask bitmask) pure
+@Omit int getBitset(dchar x) pure
 {
-    // int i = 0;
-    // for (; i < range.length - 1; i++)
-    // {
-    //     if (x >= range[i] && x < range[i+1])
-    //     {
-    //         break;
-    //     }
-    // }
-    // return cast(bool) (bitsets[i] & bitmask);
+    //
     int low = 0;
     int high = cast(int)range.length - 1 - 1;
     int mid = 0;
+
+    if (x >= 69630)
+    {
+        return bitsets[range.length - 1];
+    }
+
     while (low <= high)
     {
         mid = (low + high) / 2; // 2
-        if (x >= range[mid] && x < range[mid])
+        if (x >= range[mid] && x < range[mid+1])
         {
             break;
         }
@@ -63,7 +70,25 @@ unittest
             high = mid - 1;
         }
     }
-    return cast(bool) (bitsets[mid] & bitmask);
+    return bitsets[mid];
+}
+
+@Omit bool checkWcByBitmask(dchar x, WideCharBitmask bitmask) pure
+{
+    return cast(bool) (getBitset(x) & bitmask);
+}
+
+@Omit bool Sequential_checkWcByBitmask(dchar x, WideCharBitmask bitmask) pure
+{
+    int i = 0;
+    for (; i < range.length - 1; i++)
+    {
+        if (x >= range[i] && x < range[i+1])
+        {
+            break;
+        }
+    }
+    return cast(bool) (bitsets[i] & bitmask);
 }
 
 extern (C) int iswcntrl(dchar x) pure
