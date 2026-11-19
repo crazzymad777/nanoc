@@ -2,12 +2,15 @@ module nanoc.std.wctype;
 
 import nanoc.meta: SetKey, Nake, Typedef;
 
-import std.meta: Alias;
+import std.meta: Alias, AliasSeq;
 
 @Typedef @SetKey("wchar_t") @Nake enum _dchar = "dchar";
 @Typedef @SetKey("wint_t") @Nake enum _int = "wchar_t";
 @Typedef @SetKey("wctype_t") @Nake enum _wctype = "int";
 alias WEOF = Alias!(-1);
+
+alias SubModules = AliasSeq!("lettercase");
+public import nanoc.std.wctype.lettercase: towupper, towlower;
 
 extern (C) int wctype(const char* str)
 {
