@@ -2,6 +2,18 @@ module nanoc.std.wctype;
 
 unittest
 {
+    // Test binary search
+    assert(Sequential_getBitset(34814) == getBitset(34814));
+    assert(Sequential_getBitset(69629) == getBitset(69629));
+    assert(Sequential_getBitset(1000) == getBitset(1000));
+    assert(Sequential_getBitset(0) == getBitset(0));
+
+    // for (int i = 0; i < 69640; i++)
+    // {
+    //     // printf("%d\n", i);
+    //     assert(Sequential_getBitset(i) == getBitset(i));
+    // }
+
     assert(iswalpha('Б') == 1);
     assert(iswlower('т') == 1);
     assert(iswlower('И') == 0);
@@ -14,15 +26,6 @@ unittest
     assert(iswpunct(',') == 1);
     assert(iswspace('\n') == 1);
     assert(iswcntrl('\b') == 1);
-
-    // assert(Sequential_checkWcByBitmask(69630, WideCharBitmask.ALPHA) == iswalpha(69630));
-    //
-    // import nanoc.std.stdio;
-    // for (int i = 0; i < 69640; i++)
-    // {
-    //     printf("%d\n", i);
-    //     assert(Sequential_checkWcByBitmask(i, WideCharBitmask.ALPHA) == iswalpha(i));
-    // }
 }
 
 @Omit enum WideCharBitmask
@@ -78,7 +81,7 @@ unittest
     return cast(bool) (getBitset(x) & bitmask);
 }
 
-@Omit bool Sequential_checkWcByBitmask(dchar x, WideCharBitmask bitmask) pure
+@Omit int Sequential_getBitset(dchar x) pure
 {
     int i = 0;
     for (; i < range.length - 1; i++)
@@ -88,7 +91,7 @@ unittest
             break;
         }
     }
-    return cast(bool) (bitsets[i] & bitmask);
+    return bitsets[i];
 }
 
 extern (C) int iswcntrl(dchar x) pure
