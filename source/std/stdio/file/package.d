@@ -178,28 +178,22 @@ extern(C) dchar fgetwc(File* f)
     buf[0] = cast(char) x;
 
     int length = u8clen(buf[0]);
-    if (length == -1)
-    {
-        // rewind byte back?
-        return WEOF;
-    }
-    else if (length == 1)
+    if (length == 1)
     {
         return buf[0];
     }
     else
     {
-        auto n = fread(&buf[1], length-1, 1, f);
-        if (n == 1)
+        auto n = fread(&buf[1], 1, length-1, f);
+        if (n == length-1)
         {
             return u8toc32(buf);
         }
-        else
-        {
-            return WEOF;
-        }
     }
 
+    import nanoc.std.errno: errno, EILSEQ;
+    f.error = EILSEQ;
+    errno = EILSEQ;
     return WEOF;
 }
 

@@ -39,5 +39,7 @@ enum EPIPE = 32; /* Broken pipe */
 enum EDOM = 33; /* Math argument out of domain of func */
 enum ERANGE = 34; /* Math result not representable */
 
+enum EILSEQ = 84; /* Invalid or incomplete multibyte or wide character */
+
 /// C error number
 extern(C) __gshared int errno;
