@@ -158,3 +158,48 @@ extern(C) dchar fputwc(dchar codepoint, File* f)
     }
     return codepoint;
 }
+
+extern(C) dchar fgetwc(File* f)
+{
+    import nanoc.std.wchar_: WEOF;
+    import nanoc.utils.u8char: u8toc32, u8clen;
+    if (feof(f) || ferror(f))
+    {
+        return WEOF;
+    }
+
+    int x = fgetc(f);
+    if (x == -1)
+    {
+        return WEOF;
+    }
+
+    char[4] buf;
+    buf[0] = cast(char) x;
+
+    int length = u8clen(buf[0]);
+    if (length == -1)
+    {
+        // rewind byte back?
+        return WEOF;
+    }
+    else if (length == 1)
+    {
+        return buf[0];
+    }
+    else
+    {
+        auto n = fread(&buf[1], length-1, 1, f);
+        if (n == 1)
+        {
+            return u8toc32(buf);
+        }
+        else
+        {
+            return WEOF;
+        }
+    }
+
+    return WEOF;
+}
+
