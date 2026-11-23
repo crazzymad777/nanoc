@@ -123,6 +123,11 @@ int u8clen(ubyte octet)
     {
         size = 4;
     }
+    // else if (octet >= 0xf5)
+    // {
+    //     // Overlong encoding
+    //     size = -2;
+    // }
     return size;
 }
 
@@ -139,4 +144,57 @@ unittest
 
     x = "]";
     assert(u8clen(x[0]) == 1);
+}
+
+@Omit
+dchar u8toc32(immutable (char)* buf)
+{
+    import nanoc.std.wchar_: WEOF;
+    auto length = u8clen(buf[0]);
+    if (length == -1) return WEOF;
+
+    if (length == 1)
+    {
+        // ASCII
+        return buf[0];
+    }
+    else
+    {
+        int mask = 0;
+        if (length == 2) mask = 0b000_11111;
+        if (length == 3) mask = 0b0000_1111;
+        if (length == 4) mask = 0b00000_111;
+
+        dchar codepoint = mask & buf[0];
+        for (int i = 1; i < length; i++)
+        {
+            codepoint = (codepoint << 6) | (buf[i] & 0b00_111111);
+        }
+        return codepoint;
+    }
+    return WEOF;
+}
+
+// @Omit
+// dchar u8toc32(immutable char[4] buf)
+// {
+//     return u8toc32(&buf[0]);
+// }
+
+unittest
+{
+    auto x = "!";
+    assert(u8toc32(&x[0]) == '!');
+
+    x = "Р";
+    dchar codepoint = u8toc32(&x[0]);
+    assert(codepoint == 'Р');
+
+    x = "ї";
+    codepoint = u8toc32(&x[0]);
+    assert(codepoint == 'ї');
+
+    x = "セ";
+    codepoint = u8toc32(&x[0]);
+    assert(codepoint == 'セ');
 }
