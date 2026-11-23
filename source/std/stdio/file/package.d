@@ -146,49 +146,10 @@ extern (C) char* fgets(char* buffer, size_t size, FILE* stream)
 extern(C) dchar fputwc(dchar codepoint, File* f)
 {
     import nanoc.std.wchar_: WEOF;
+    import nanoc.utils.u8char: c32tou8;
     char[4] buf;
-    int size;
-    if (codepoint == WEOF)
-    {
-        return WEOF;
-    }
-    else if (codepoint < 0x80)
-    {
-        // ASCII
-        buf[0] = cast(char) codepoint;
-        size = 1;
-    }
-    else
-    {
-        // UTF-8
-        int mask = 0;
-        if (codepoint >= 0x80 && codepoint <= 0x7ff)
-        {
-            mask = 0b11000000;
-            size = 2;
-        }
-        else if (codepoint >= 0x800 && codepoint <= 0xffff)
-        {
-            mask = 0b11100000;
-            size = 3;
-        }
-        else if (codepoint >= 0x10000 && codepoint <= 0x10ffff)
-        {
-            mask = 0b11110000;
-            size = 4;
-        }
-        else
-        {
-            return WEOF;
-        }
-
-        for (int i = size - 1; i > 0; i--)
-        {
-                buf[i] = cast(char) ((codepoint & 0b111111) | 0b10000000);
-                codepoint = codepoint >> 6;
-        }
-        buf[0] = cast(char) ((codepoint & 0b11111) | mask);
-    }
+    int size = c32tou8(codepoint, &buf[0]);
+    if (size == -1) return WEOF;
 
     ulong r = fwrite(&buf[0], cast(ulong) size, 1, f);
     if (r == 0)
@@ -196,4 +157,24 @@ extern(C) dchar fputwc(dchar codepoint, File* f)
         return WEOF;
     }
     return codepoint;
+}
+
+unittest
+{
+    import nanoc.std.wchar_;
+    import nanoc.std.stdio;
+
+    immutable(dchar)* buffer = "Привет!\n\0"d.ptr;
+    byte[14] memory;
+    byte[14] expected = cast(byte[14]) [0xd0, 0x9f, 0xd1, 0x80, 0xd0, 0xb8, 0xd0, 0xb2, 0xd0, 0xb5, 0xd1, 0x82, 0x21, 0x0a];
+    auto f = fmemopen(cast(void*)&memory, 15, "w".ptr);
+    assert(f !is null);
+    for (int i = 0; i < wcslen(buffer); i++)
+    {
+        fputwc(buffer[i], f);
+    }
+
+    import nanoc.std.string: memcmp;
+    assert(memcmp(&expected[0], &memory[0], 14) == 0);
+    fclose(f);
 }
