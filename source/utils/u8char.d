@@ -44,10 +44,10 @@ int c32tou8(dchar codepoint, char* buf)
 
         for (int i = size - 1; i > 0; i--)
         {
-            buf[i] = cast(char) ((codepoint & 0b111111) | 0b10_000000);
+            buf[i] = cast(char) ((codepoint & 0b00_111111) | 0b10_000000);
             codepoint = codepoint >> 6;
         }
-        buf[0] = cast(char) ((codepoint & 0b11111) | mask);
+        buf[0] = cast(char) ((codepoint & 0b000_11111) | mask);
     }
     return size;
 }
