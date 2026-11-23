@@ -161,7 +161,7 @@ dchar u8toc32(immutable (char)* buf)
     else
     {
         const dchar maxCodepoint = 0x10ffff;
-        dchar minCodepoint = 0; // for overlong encoding detecting
+        dchar minCodepoint = 0; // for overlong encoding detection
         // UTF-8
         int mask = 0;
         if (length == 2) {mask = 0b000_11111; minCodepoint = 0x80;}
