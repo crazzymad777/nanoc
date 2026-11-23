@@ -74,6 +74,27 @@ unittest
     assert(buf[0] == 0xe3);
     assert(buf[1] == 0x82);
     assert(buf[2] == 0xbb);
+
+    size = c32tou8(0x80, &buf[0]);
+    assert(size == 2);
+    assert(buf[0] == 0xc2);
+    assert(buf[1] == 0x80);
+
+    size = c32tou8(0x800, &buf[0]);
+    assert(size == 3);
+    assert(buf[0] == 0xe0);
+    assert(buf[1] == 0xa0);
+    assert(buf[2] == 0x80);
+
+    size = c32tou8(0x10000, &buf[0]);
+    assert(size == 4);
+    assert(buf[0] == 0xf0);
+    assert(buf[1] == 0x90);
+    assert(buf[2] == 0x80);
+    assert(buf[3] == 0x80);
+
+    size = c32tou8(cast(dchar) 0x110000, &buf[0]);
+    assert(size == -1);
 }
 
 @Omit
@@ -90,15 +111,15 @@ int u8clen(ubyte octet)
     {
         size = 1;
     }
-    else if (octet >= 0xc0 && octet < 0xdf)
+    else if (octet >= 0xc0 && octet <= 0xdf)
     {
         size = 2;
     }
-    else if (octet >= 0xe0 && octet < 0xef)
+    else if (octet >= 0xe0 && octet <= 0xef)
     {
         size = 3;
     }
-    else if (octet >= 0xf0 && octet < 0xf7)
+    else if (octet >= 0xf0 && octet <= 0xf7)
     {
         size = 4;
     }
@@ -116,8 +137,6 @@ unittest
     assert(u8clen(x[0]) == 2);
     assert(u8clen(x[1]) == -1);
 
-    // Overlong encoding
-    assert(u8clen(0xdf) == -1);
-    assert(u8clen(0xef) == -1);
-    assert(u8clen(0xf7) == -1);
+    x = "]";
+    assert(u8clen(x[0]) == 1);
 }
