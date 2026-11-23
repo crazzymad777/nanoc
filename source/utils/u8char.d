@@ -160,26 +160,37 @@ dchar u8toc32(immutable (char)* buf)
     }
     else
     {
+        const dchar maxCodepoint = 0x10ffff;
+        dchar minCodepoint = 0; // for overlong encoding detecting
+        // UTF-8
         int mask = 0;
-        if (length == 2) mask = 0b000_11111;
-        if (length == 3) mask = 0b0000_1111;
-        if (length == 4) mask = 0b00000_111;
+        if (length == 2) {mask = 0b000_11111; minCodepoint = 0x80;}
+        if (length == 3) {mask = 0b0000_1111; minCodepoint = 0x00800;}
+        if (length == 4) {mask = 0b00000_111; minCodepoint = 0x10000;}
 
         dchar codepoint = mask & buf[0];
         for (int i = 1; i < length; i++)
         {
+            if ((buf[i] & 0xC0) != 0x80)
+            {
+                // Not a continuation byte
+                return WEOF;
+            }
+
             codepoint = (codepoint << 6) | (buf[i] & 0b00_111111);
         }
+
+        if (codepoint < minCodepoint || codepoint > maxCodepoint) return WEOF;
         return codepoint;
     }
     return WEOF;
 }
 
-// @Omit
-// dchar u8toc32(immutable char[4] buf)
-// {
-//     return u8toc32(&buf[0]);
-// }
+@Omit
+dchar u8toc32(immutable char[4] buf)
+{
+    return u8toc32(&buf[0]);
+}
 
 unittest
 {
@@ -197,4 +208,46 @@ unittest
     x = "セ";
     codepoint = u8toc32(&x[0]);
     assert(codepoint == 'セ');
+
+    char[4] buf = [0, 0, 0, 0];
+    codepoint = u8toc32(buf);
+    assert(codepoint == 0);
+
+    // Overlong encoding test
+    buf = [0b11_00000_1, 0b10_000001, 0, 0]; // 7 bit can be encoded in ASCII
+    codepoint = u8toc32(buf);
+    assert(codepoint == -1);
+
+    buf = [0b111_00000, 0b10_0_10000, 0b10_000000, 0]; // 11 bit can be encoded in 2 bytes of an UTF-8
+    codepoint = u8toc32(buf);
+    assert(codepoint == -1);
+
+    buf = [0b1111_0000, 0b10_00_1000, 0b10_000000, 0b10_000000]; // 16 bit can be encoded in 2 bytes of the UTF-8
+    codepoint = u8toc32(buf);
+    assert(codepoint == -1);
+
+    buf = [0b11_000010, 0b10_000001, 0, 0]; // 8 bit can not encoded in ASCII
+    codepoint = u8toc32(buf);
+    assert(codepoint == 0b10000001);
+
+    buf = [0b111_00000, 0b10_100000, 0b10_000000, 0]; // 12 bit can not be encoded in 2 bytes of the UTF-8
+    codepoint = u8toc32(buf);
+    assert(codepoint == 0b100000_000000);
+
+    buf = [0b1111_0000, 0b10_0_10000, 0b10_000000, 0b10_000000]; // 17 bit can not be encoded in 2 bytes of the UTF-8
+    codepoint = u8toc32(buf);
+    assert(codepoint == 0b10000_000000_000000);
+
+    // test Missing continuation byte
+    buf = [0b11_000010, 0b00_000001, 0, 0];
+    codepoint = u8toc32(buf);
+    assert(codepoint == -1);
+
+    buf = [0b11_000010, 0b01_000001, 0, 0];
+    codepoint = u8toc32(buf);
+    assert(codepoint == -1);
+
+    buf = [0b11_000010, 0b11_000001, 0, 0];
+    codepoint = u8toc32(buf);
+    assert(codepoint == -1);
 }
