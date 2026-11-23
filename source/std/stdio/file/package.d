@@ -142,3 +142,58 @@ extern (C) char* fgets(char* buffer, size_t size, FILE* stream)
 
     return buffer;
 }
+
+extern(C) dchar fputwc(dchar codepoint, File* f)
+{
+    import nanoc.std.wchar_: WEOF;
+    char[4] buf;
+    int size;
+    if (codepoint == WEOF)
+    {
+        return WEOF;
+    }
+    else if (codepoint < 0x80)
+    {
+        // ASCII
+        buf[0] = cast(char) codepoint;
+        size = 1;
+    }
+    else
+    {
+        // UTF-8
+        int mask = 0;
+        if (codepoint >= 0x80 && codepoint <= 0x7ff)
+        {
+            mask = 0b11000000;
+            size = 2;
+        }
+        else if (codepoint >= 0x800 && codepoint <= 0xffff)
+        {
+            mask = 0b11100000;
+            size = 3;
+        }
+        else if (codepoint >= 0x10000 && codepoint <= 0x10ffff)
+        {
+            mask = 0b11110000;
+            size = 4;
+        }
+        else
+        {
+            return WEOF;
+        }
+
+        for (int i = size - 1; i > 0; i--)
+        {
+                buf[i] = cast(char) ((codepoint & 0b111111) | 0b10000000);
+                codepoint = codepoint >> 6;
+        }
+        buf[0] = cast(char) ((codepoint & 0b11111) | mask);
+    }
+
+    ulong r = fwrite(&buf[0], cast(ulong) size, 1, f);
+    if (r == 0)
+    {
+        return WEOF;
+    }
+    return codepoint;
+}

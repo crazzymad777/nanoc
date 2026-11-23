@@ -58,3 +58,9 @@ extern(C) int getchar()
     import nanoc.std.stdio.file: File, fgetc;
     return fgetc(cast(File*) STDOUT_FILENO);
 }
+
+extern(C) dchar putwchar(dchar octet)
+{
+    import nanoc.std.stdio.file: File, fputwc;
+    return fputwc(octet, cast(File*) STDOUT_FILENO);
+}
