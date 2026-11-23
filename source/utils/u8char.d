@@ -75,3 +75,49 @@ unittest
     assert(buf[1] == 0x82);
     assert(buf[2] == 0xbb);
 }
+
+@Omit
+int u8clen(ubyte octet)
+{
+    if (octet >= 0x80 && (octet & 0xc0) != 0xc0)
+    {
+        // continuation byte
+        return -1;
+    }
+
+    int size = -1;
+    if (octet >= 0 && octet < 0x80)
+    {
+        size = 1;
+    }
+    else if (octet >= 0xc0 && octet < 0xdf)
+    {
+        size = 2;
+    }
+    else if (octet >= 0xe0 && octet < 0xef)
+    {
+        size = 3;
+    }
+    else if (octet >= 0xf0 && octet < 0xf7)
+    {
+        size = 4;
+    }
+    return size;
+}
+
+unittest
+{
+    auto x = "カ";
+    assert(u8clen(x[0]) == 3);
+    assert(u8clen(x[1]) == -1);
+    assert(u8clen(x[2]) == -1);
+
+    x = "т";
+    assert(u8clen(x[0]) == 2);
+    assert(u8clen(x[1]) == -1);
+
+    // Overlong encoding
+    assert(u8clen(0xdf) == -1);
+    assert(u8clen(0xef) == -1);
+    assert(u8clen(0xf7) == -1);
+}
