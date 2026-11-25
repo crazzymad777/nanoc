@@ -105,11 +105,11 @@ void show_function(alias member)()
             }
             n++;
         }
-        // static if (variadicFunctionStyle!member == Variadic.c)
-        // {
-        //     if (n > 0) put_alias_seq(", ");
-        //     put_alias_seq("...");
-        // }
+        static if (variadicFunctionStyle!member == Variadic.c)
+        {
+            if (n > 0) put_alias_seq(", ");
+            put_alias_seq("...");
+        }
         put_alias_seq(");\n");
     }
 }

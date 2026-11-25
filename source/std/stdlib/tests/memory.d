@@ -1,6 +1,6 @@
 module nanoc.std.stdlib.tests.memory;
 import nanoc.std.stdlib.memory;
-
+/+
 unittest
 {
     size_t size = 4096;
@@ -37,7 +37,7 @@ unittest
     assert(tail.flags == (MemoryBlock.NANOC_MEMORY | MemoryBlock.TAIL));
     assert(tail.head == &smb.head);
     assert(_init_super_block(MemoryBlock.sizeof*4-1) is null);
-}
+}+/
 
 unittest
 {
@@ -74,4 +74,14 @@ unittest
     {
         _free(ptrs[i]);
     }
+}
+
+unittest
+{
+    byte* bytes = cast(byte*) _malloc(4096-PageHeader.sizeof-1);
+    if (bytes is null)
+    {
+        assert(false, "_malloc failed");
+    }
+    _free(bytes);
 }

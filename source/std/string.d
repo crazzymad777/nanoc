@@ -1,6 +1,9 @@
 module nanoc.std.string;
 
-extern(C) size_t strlen(const char *str)
+import nanoc.meta: Omit;
+
+@Omit
+size_t astrlen(T)(const T* str)
 {
     size_t i = 0;
     while(str[i] != 0)
@@ -8,6 +11,11 @@ extern(C) size_t strlen(const char *str)
         i++;
     }
     return i;
+}
+
+extern(C) size_t strlen(const char *str)
+{
+    return astrlen!(char)(str);
 }
 
 unittest
@@ -68,7 +76,8 @@ unittest
 }
 
 /// Compares two strings
-extern(C) int strcmp(const (char)* s1, const (char)* s2)
+@Omit
+int astrcmp(T)(const (T)* s1, const (T)* s2)
 {
     int i = 0;
     while (s1[i] != '\0' && s2[i] != '\0')
@@ -77,6 +86,11 @@ extern(C) int strcmp(const (char)* s1, const (char)* s2)
         i++;
     }
     return s1[i] - s2[i];
+}
+
+extern(C) int strcmp(const (char)* s1, const (char)* s2)
+{
+    return astrcmp!(char)(s1, s2);
 }
 
 unittest
@@ -107,9 +121,10 @@ unittest
     assert(strcmp(s3, s2) > 0);
 }
 
-extern(C) char* strchr(const (char)* s, int c)
+@Omit
+T* astrchr(T)(const (T)* s, int c)
 {
-    char* ptr = cast(char*) s;
+    T* ptr = cast(T*) s;
     while (*ptr != '\0')
     {
         if (*ptr == c)
@@ -118,7 +133,12 @@ extern(C) char* strchr(const (char)* s, int c)
         }
         ptr++;
     }
-    return cast(char*) 0;
+    return cast(T*) 0;
+}
+
+extern(C) char* strchr(const (char)* s, int c)
+{
+    return astrchr!(char)(s, c);
 }
 
 unittest

@@ -72,13 +72,15 @@ template Footprint()
         immutable ModuleDescriptor("nanoc.sys.mman", "sys/mman.h"),
         immutable ModuleDescriptor("nanoc.sys.wait", "sys/wait.h"),
         immutable ModuleDescriptor("nanoc.std.ctype", "ctype.h"),
+        immutable ModuleDescriptor("nanoc.std.wchar_", "wchar.h"),
+        immutable ModuleDescriptor("nanoc.std.wctype", "wctype.h"),
         immutable ModuleDescriptor("nanoc.std.errno", "errno.h"),
         immutable ModuleDescriptor("nanoc.sys.stat", "sys/stat.h"),
         immutable ModuleDescriptor("nanoc.misc.signal", "signal.h"),
         immutable ModuleDescriptor("nanoc.std.time", "time.h"),
         immutable ModuleDescriptor("nanoc.std.stdarg", "stdarg.h"),
-
         immutable ModuleDescriptor("nanoc.fcntl", "fcntl.h"),
+        immutable ModuleDescriptor("nanoc.misc.alloca", "alloca.h"),
     );
 
     void show()

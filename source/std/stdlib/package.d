@@ -12,6 +12,14 @@ const char* SHELL = "/bin/sh";
 
 extern (C)
 {
+    import nanoc.meta: Omit;
+    // for __builtin_alloca & __builtin_va_arg
+    @Omit
+    noreturn __stack_chk_fail()
+    {
+        abort();
+    }
+
     /// Terminate a process
     noreturn exit(int status)
     {

@@ -110,3 +110,83 @@ extern (C) int feof(FILE* stream)
 {
     return nanoeof(checkStdHandler(stream));
 }
+
+extern (C) char* fgets(char* buffer, size_t size, FILE* stream)
+{
+    int index = 0;
+    do
+    {
+        int character = fgetc(stream);
+
+        if (character == -1)
+        {
+            if (ferror(stream) != 0) return null;
+            if (index == 0) return null;
+            break;
+        }
+        else
+        {
+            if (index < size)
+            {
+                buffer[index] = cast(char) character;
+                index++;
+            }
+
+            if (index == size || character == '\n')
+            {
+                buffer[index] = '\0';
+                break;
+            }
+        }
+    } while (1);
+
+    return buffer;
+}
+
+extern(C) dchar fputwc(dchar codepoint, File* f)
+{
+    import nanoc.std.wchar_: WEOF;
+    import nanoc.utils.u8char: c32tou8;
+    char[4] buf;
+    int size = c32tou8(codepoint, &buf[0]);
+    if (size == -1) return WEOF;
+
+    ulong r = fwrite(&buf[0], cast(ulong) size, 1, f);
+    if (r == 0)
+    {
+        return WEOF;
+    }
+    return codepoint;
+}
+
+extern(C) dchar fgetwc(File* f)
+{
+    import nanoc.std.wchar_: WEOF;
+    import nanoc.utils.u8char: u8toc32, u8clen;
+    if (feof(f) || ferror(f))
+    {
+        return WEOF;
+    }
+
+    int x = fgetc(f);
+    if (x == -1)
+    {
+        return WEOF;
+    }
+
+    char[4] buf;
+    buf[0] = cast(char) x;
+
+    int length = u8clen(buf[0]);
+    auto n = fread(&buf[1], 1, length-1, f);
+    if (n == length-1)
+    {
+        return u8toc32(buf);
+    }
+
+    import nanoc.std.errno: errno, EILSEQ;
+    f.error = EILSEQ;
+    errno = EILSEQ;
+    return WEOF;
+}
+
