@@ -177,7 +177,7 @@ void show_meta_member(string x, alias member, Args...)()
                     else
                         const key = x;
 
-                    put_alias_seq("typedef ", member.stringof, ' ', key, "; // type\n");
+                    put_alias_seq("typedef ", member.stringof, ' ', key, ";\n"); //  // type
                 }
             }
             else
@@ -205,7 +205,7 @@ void show_meta_member(string x, alias member, Args...)()
 
                     static if (hasUDA!(member, Typedef))
                     {
-                        put_alias_seq("typedef ", value, " ", key, "; //alias\n");
+                        put_alias_seq("typedef ", value, " ", key, ";\n"); // //alias
                     }
                     else
                     {

@@ -142,6 +142,15 @@ int fscntl(T...)(int fd, int op, T args)
     return cast(int) s;
 }
 
+int get_argc_fscntl(int op)
+{
+    if (op == F_DUPFD)
+    {
+        return 1;
+    }
+    return -1;
+}
+
 int fssync(int fd)
 {
     long s = syscall(SYS_fsync, fd);
